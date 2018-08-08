@@ -6,11 +6,19 @@
     <meta name="description" content="Basic example for Particle Player component."></meta>
     <script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
     <script src="../../dist/aframe-particleplayer-component.min.js"></script>
-    <script src="https://unpkg.com/aframe-environment-component@1.0.0/dist/aframe-environment-component.min.js"></script>
+    <script type="text/javascript">
+  
+
+    </script>
   </head>
   <body>
-    <a-scene environment="preset: forest">
-      <a-entity particleplayer=""></a-entity>
+    <a-scene background="color: #222">
+      <a-assets>
+        <a-asset-item id="particles-json" src="particles-example.json"></a-asset-item>
+      </a-assets>
+      <a-entity particleplayer="data: #particles-json">
+        <a-sphere radius="0.001" material="color: yellow" merda></a-sphere>
+      </a-entity>
     </a-scene>
 
     <!-- GitHub Corner. -->
