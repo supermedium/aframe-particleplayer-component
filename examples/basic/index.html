@@ -6,22 +6,25 @@
     <meta name="description" content="Basic example for Particle Player component."></meta>
     <!--<script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>-->
     <script src="aframe.js"></script>
-    <script src="../../dist/aframe-particleplayer-component.min.js"></script>
+    <!--<script src="../../dist/aframe-particleplayer-component.min.js"></script>-->
+    <script src="../../index.js"></script>
     <script type="text/javascript">
   
+      document.addEventListener('mousedown', function(evt){
+        document.querySelector('a-scene').emit('start', {position: 1});
+      })
 
     </script>
   </head>
   <body>
     <a-scene 
       background="color: #222"
-      particleplayer="src: #particles-json"
+      particleplayer="src: #particles-json; img: #particle-sprite; count: 3%; loop: 2"
       >
       <a-assets>
         <a-asset-item id="particles-json" src="particles-example.json"></a-asset-item>
+        <img src="sprite.png" id="particle-sprite">
       </a-assets>
-
-      <a-entity geometry material="shader:flat; color:green" id="particleMaterial"></a-entity>
     </a-scene>
 
     <!-- GitHub Corner. -->
