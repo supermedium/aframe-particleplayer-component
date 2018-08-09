@@ -4,7 +4,8 @@
     <meta charset="utf-8">
     <title>A-Frame Particle Player Component - Basic</title>
     <meta name="description" content="Basic example for Particle Player component."></meta>
-    <script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
+    <!--<script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>-->
+    <script src="aframe.js"></script>
     <script src="../../dist/aframe-particleplayer-component.min.js"></script>
     <script type="text/javascript">
   
@@ -12,13 +13,15 @@
     </script>
   </head>
   <body>
-    <a-scene background="color: #222">
+    <a-scene 
+      background="color: #222"
+      particleplayer="src: #particles-json"
+      >
       <a-assets>
         <a-asset-item id="particles-json" src="particles-example.json"></a-asset-item>
       </a-assets>
-      <a-entity particleplayer="data: #particles-json">
-        <a-sphere radius="0.001" material="color: yellow" merda></a-sphere>
-      </a-entity>
+
+      <a-entity geometry material="shader:flat; color:green" id="particleMaterial"></a-entity>
     </a-scene>
 
     <!-- GitHub Corner. -->
