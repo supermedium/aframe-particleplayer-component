@@ -26,13 +26,13 @@ FOLDER = ''
 
 # First and last frame of the simulation to export
 FIRST_FRAME = 1
-LAST_FRAME = 10
+LAST_FRAME = 100
 
 # Export particle rotation
-ROTATION = True
+ROTATION = False
 
 # Export particle velocity
-VELOCITY = True
+VELOCITY = False
 
 # Export one each <STEP> frames
 STEP = 1
@@ -59,6 +59,7 @@ data = {'version': VERSION, 'precision': PRECISION, 'rotation': ROTATION, 'veloc
 
 def AA(n):
 	return floor(n * PRECISION)
+#	return floor(n * PRECISION) / PRECISION
 
 for frame in range(FIRST_FRAME, LAST_FRAME + 1, STEP):
 	bpy.context.scene.frame_set(frame)
