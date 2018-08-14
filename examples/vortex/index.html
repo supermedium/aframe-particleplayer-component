@@ -2,62 +2,25 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>A-Frame Particle Player Component - Fireworks</title>
-    <meta name="description" content="Fireworks example for Particle Player component."></meta>
+    <title>A-Frame Particle Player Component - Vortex</title>
+    <meta name="description" content="Vortex example for Particle Player component."></meta>
     <!--<script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>-->
     <script src="aframe.js"></script>
     <!--<script src="../../dist/aframe-particleplayer-component.min.js"></script>-->
     <script src="../../index.js"></script>
-
-    <style type="text/css">
-      #help{
-        font: 20px sans-serif;
-        position: absolute;
-        width: 100%;
-        z-index: 99999;
-        color: #ccc;
-        margin-top: 2em;
-        text-align: center;
-      }
-    </style>
-
-    <script type="text/javascript">
-      AFRAME.registerComponent('clicker', {
-        init: function(){
-          var el = this.el;
-          document.addEventListener('keydown', function(evt){
-            if (evt.keyCode === 32) {
-              var x = (Math.random() - 0.5) * 7;
-              var y = (Math.random() - 0.5) * 4;
-              var z = -Math.random() * 2;
-
-              el.emit('start', { 
-                position: new THREE.Vector3(x, y, z),
-                rotation: new THREE.Euler(Math.random() - 0.5, 0, 0)
-              });
-            }
-          });
-        }
-      });
-    </script>
     
   </head>
   <body>
-    <div id="help">Press SPACE for fireworks</div>
-    <a-scene background="color: #222">
-
+    <a-scene background="color: #ccc">
       <a-assets>
-        <a-asset-item id="particlesJson" src="particles-fireworks.json"></a-asset-item>
+        <a-asset-item id="particlesJson" src="particles-vortex.json"></a-asset-item>
         <img src="sprite.png" id="particleTex">
       </a-assets>
 
-      <a-entity position="0 1 -5"
-        clicker 
-        particleplayer="on: start; src: #particlesJson; img: #particleTex; dur: 4000; count: 50%; scale: 0.6; pscale: 2; interpolate: true; shader: standard; cache: 20"
+      <a-entity
+        position="0 0 -5"
+        particleplayer="src: #particlesJson; img: #particleTex; dur: 5000; scale: 1; pscale: 2; interpolate: true; loop: true; protation: 0 90 0; color: #222; blending: normal; opacity: 0.2"
       ></a-entity>
-
-      <a-light position="6 14 -2" type="point" color="#f29"></a-light>
-      <a-light position="-6 -14 12" color="#f92" type="point"></a-light>
     </a-scene>
 
     <!-- GitHub Corner. -->

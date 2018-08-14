@@ -51,7 +51,7 @@ import os
 from math import floor
 VERSION = '1.0'
 
-data = {'version': VERSION, 'precision': PRECISION, 'rotation': ROTATION, 'velocity': VELOCITY, 'frames': [], 'sprite_rotation': [0, 0, 0] }
+data = {'version': VERSION, 'precision': PRECISION, 'rotation': ROTATION, 'velocity': VELOCITY, 'frames': [], 'sprite_rotation': False }
 
 def AA(n):
 	return floor(n * PRECISION)
@@ -70,6 +70,7 @@ def export():
 	if ROTATION:
 		dupli = obj.particle_systems[0].settings.dupli_object
 		if dupli:
+			data['sprite_rotation'] = [0, 0, 0]
 			data['sprite_rotation'][0] = AA( dupli.rotation_euler.x )
 			data['sprite_rotation'][1] = AA( dupli.rotation_euler.z )
 			data['sprite_rotation'][2] = AA( -dupli.rotation_euler.y )

@@ -11,7 +11,7 @@ AFRAME.registerComponent('particleplayer', {
  multiple: true,
   schema: {
     src: {type: 'selector'},
-    on: {default: 'start'},
+    on: {default: 'init'},
     count: {default: '100%'},
     dur: {default: 1000, type: 'int'},
     loop: {default: 'false'},
@@ -22,7 +22,7 @@ AFRAME.registerComponent('particleplayer', {
     cache: {default: 5, type: 'int'}, // number of simultaneous particle systems
     shader: {default: 'flat', oneOf: ['flat', 'standard']},
     color: {default: '#fff', type: 'color'},
-    additive: {default: false},
+    blending: {default: 'additive', oneOf: ['normal', 'additive', 'multiply', 'substractive']},
     img: {type: 'selector'},
     interpolate: {default: false}
   },
@@ -42,9 +42,8 @@ AFRAME.registerComponent('particleplayer', {
     this.lastFrame = 0;
     this.msPerFrame = 0;
     this.useRotation = false;
-    this.camera = null;
-    this.sprite_rotation = new THREE.Vector3();
-    this.protation = new THREE.Euler();
+    this.sprite_rotation = false;
+    this.protation = false;
 
     // temporal vars for preventing gc
     this.v = new THREE.Vector3();
@@ -53,11 +52,19 @@ AFRAME.registerComponent('particleplayer', {
 
   update: function(oldData) {
     var params;
+    var blendings = {
+      'normal': THREE.NormalBlending,
+      'additive': THREE.AdditiveBlending,
+      'substractive': THREE.SubstractiveBlending,
+      'multiply': THREE.MultiplyBlending
+    };
     var data = this.data;
 
     if (oldData.on !== data.on) {
       if (oldData.on) { this.el.removeEventListener(oldData.on, this.start)}
-      this.el.addEventListener(data.on, this.start.bind(this));
+      if (data.on !== 'play') {
+        this.el.addEventListener(data.on, this.start.bind(this));
+      }
     }
 
     this.loadParticlesJSON(data.src, data.scale);
@@ -76,19 +83,15 @@ AFRAME.registerComponent('particleplayer', {
  
     this.indexPool = new Array(this.numParticles);
 
-    this.protation.set(
-      this.data.protation.x * Math.PI / 180,
-      this.data.protation.y * Math.PI / 180,
-      this.data.protation.z * Math.PI / 180
-    );
 
     params = {
       color: new THREE.Color(data.color),
-      //side: THREE.DoubleSide,
-      blending: data.additive ? THREE.AdditiveBlending : THREE.NormalBlending,
+      side: THREE.DoubleSide,
+      blending: blendings[data.blending],
       map: data.img ? new THREE.TextureLoader().load(data.img.src) : null,
       depthWrite: false,
-      transparent: data.img ? true : false
+      opacity: data.opacity,
+      transparent: data.img || data.blending !== 'normal' || data.opacity < 1 ? true : false
     };
 
     if (data.shader === 'flat') {
@@ -99,18 +102,29 @@ AFRAME.registerComponent('particleplayer', {
     
     var ratio = data.img ? data.img.width / data.img.height : 1;
     this.geometry = new THREE.PlaneBufferGeometry(0.1 * ratio * data.pscale, 0.1 * data.pscale);
-    if (this.useRotation){
+
+    this.allParticlesEl = document.createElement('a-entity');
+    this.allParticlesEl.id = "__json-particles-" + Math.floor(Math.random()*1000);
+    this.el.appendChild(this.allParticlesEl);
+
+    this.loadParticlesJSON(data.src, data.scale);
+
+    if (this.sprite_rotation !== false){
       this.geometry.rotateX(this.sprite_rotation.x);
       this.geometry.rotateY(this.sprite_rotation.y);
       this.geometry.rotateZ(this.sprite_rotation.z);
     }
+    else {
+      this.geometry.rotateX(this.data.protation.x * Math.PI / 180);
+      this.geometry.rotateY(this.data.protation.y * Math.PI / 180);
+      this.geometry.rotateZ(this.data.protation.z * Math.PI / 180);
+    }
 
-    this.allParticlesEl = document.createElement('a-entity');
-    this.allParticlesEl.id = "__json-particles-" + Math.floor(Math.random()*1000);
-    this.el.sceneEl.appendChild(this.allParticlesEl);
-
-    this.loadParticlesJSON(data.src, data.scale);
     this.cacheParticles(data.cache);
+
+    if (data.on === 'init') {
+      this.start();
+    }
   },
 
   loadParticlesJSON: function (json, scale) {
@@ -125,9 +139,12 @@ AFRAME.registerComponent('particleplayer', {
 
     this.useRotation = data.rotation;
 
-    this.sprite_rotation.x = data.sprite_rotation[0] / F;
-    this.sprite_rotation.y = data.sprite_rotation[1] / F;
-    this.sprite_rotation.z = data.sprite_rotation[2] / F;
+    if (data.sprite_rotation !== false) {
+      this.sprite_rotation.x = data.sprite_rotation[0] / F;
+      this.sprite_rotation.y = data.sprite_rotation[1] / F;
+      this.sprite_rotation.z = data.sprite_rotation[2] / F;
+    }
+    else { this.sprite_rotation = false; }
 
     this.framedata = new Array(frames.length);
     for (var f = 0; f < frames.length; f++) {
@@ -214,8 +231,8 @@ AFRAME.registerComponent('particleplayer', {
     var ps;
     var id;
     var oldestTime = 0;
-    var position = evt.detail['position'];
-    var rotation = evt.detail['rotation'];
+    var position = evt ? evt.detail['position'] : null;
+    var rotation = evt ? evt.detail['rotation'] : null;
 
     if (!(position instanceof THREE.Vector3)) { position = new THREE.Vector3(); }
     if (!(rotation instanceof THREE.Euler)) { rotation = new THREE.Euler(); }
@@ -241,7 +258,6 @@ AFRAME.registerComponent('particleplayer', {
     ps.object3D.rotation.copy(rotation);
     ps.time = 0;
 
-    this.camera = document.querySelector('[camera]').object3D;
     this.resetParticles(ps);
   },
 
@@ -257,9 +273,7 @@ AFRAME.registerComponent('particleplayer', {
     if (this.restPositions[i]) { part.position.copy(this.restPositions[i]); }
     if (this.useRotation){
       if (this.restRotations[i]) { part.rotation.copy(this.restRotations[i]); }
-    }
-    else {
-      part.rotation.copy(this.protation);
+    } else {
       //part.lookAt(this.camera.position); // lookAt does not support rotated or translated parents! :_(
     }
   },
@@ -324,7 +338,6 @@ AFRAME.registerComponent('particleplayer', {
 
       relTime = ps.time / this.data.dur;
       frame = relTime * this.numFrames;
-      console.log(Math.floor(frame));
       fdata = this.framedata[Math.floor(frame)];
       if (interpolate) {
         frameTime = frame - Math.floor(frame);
@@ -342,8 +355,7 @@ AFRAME.registerComponent('particleplayer', {
 
         if (interpolate && fdataNext && fdataNext[pi].alive) {
           particle.position.lerpVectors(fdata[pi].position, fdataNext[pi].position, frameTime);
-        }
-        else {
+        } else {
           particle.position.copy(fdata[pi].position);
         }
 
@@ -354,14 +366,12 @@ AFRAME.registerComponent('particleplayer', {
 
       ps.time += delta;
       if (ps.time >= this.data.dur) {
-        console.log('loop');
         if (ps.loopCount < ps.loopTotal) {
-            this.doLoop(ps);
-          }
-          else {
-            ps.active = false;
-            ps.object3D.visible = false;
-          }
+          this.doLoop(ps);
+        } else {
+          ps.active = false;
+          ps.object3D.visible = false;
+        }
         continue;
       }
     }
