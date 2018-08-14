@@ -13,10 +13,9 @@
       document.addEventListener('keydown', function(evt){
         if (evt.keyCode==13){
           document.querySelector('a-scene').emit('start', {
-            //position: new THREE.Vector3(Math.random()*6-3, 1.6+Math.random()*6-3, -5)
-            position: new THREE.Vector3(0, 1.6, -5)
+            position: new THREE.Vector3( Math.random() * 6 - 3, 1.6 + Math.random() * 6 - 3, -5)
+            //position: new THREE.Vector3(0, 1.6, -5)
           });
-          console.log('shoot');
         } 
       })
 
@@ -25,12 +24,20 @@
   <body>
     <a-scene 
       background="color: #222"
-      particleplayer="src: #particles-json; img: #particle-sprite; dur: 5000; count: 10%;  scale: 0.6; pscale: 2"
+      particleplayer="src: #particles-json; img: #particle-sprite; dur: 1000; count: 100%; scale: 1; pscale: 3; interpolate: false; loop: 3"
       >
       <a-assets>
-        <a-asset-item id="particles-json" src="particles-fireworks.json"></a-asset-item>
-        <img src="sprite.png" id="particle-sprite">
+        <a-asset-item id="particles-json" src="particles-test.json"></a-asset-item>
+        <img src="test.png" id="particle-sprite">
       </a-assets>
+
+      <a-light position="1 4 -2" type="point" intensity="0.7" color="#adf"></a-light>
+      <a-light position="-1 2 2" intensity="0.3" color="#daf" type="point"></a-light>
+    <!--
+      <a-sphere radius="0.6" position="1 1.5 -4"></a-sphere>
+      <a-box position="0 0.5 -4.5"></a-box>
+      <a-plane width="10" height="10" rotation="-90 0 0"></a-plane>
+    -->
     </a-scene>
 
     <!-- GitHub Corner. -->
