@@ -23,14 +23,14 @@ If data is 0, the particle is not alive in that frame (it should be invisible)
 # CONFIGURATION ------------------------------
 
 # Destination folder. Leave empty for using same folder as current .blend
-FOLDER = 'd://super/git/aframe-particleplayer-component/examples/basic' 
+FOLDER = '' 
 
 # First and last frame of the simulation to export
 FIRST_FRAME = 1
-LAST_FRAME = 25
+LAST_FRAME = 110
 
 # Export particle rotation
-ROTATION = True
+ROTATION = False
 
 # Export particle velocity
 VELOCITY = False

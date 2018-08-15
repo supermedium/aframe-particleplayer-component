@@ -140,6 +140,7 @@ AFRAME.registerComponent('particleplayer', {
     this.useRotation = data.rotation;
 
     if (data.sprite_rotation !== false) {
+      this.sprite_rotation = new THREE.Vector3();
       this.sprite_rotation.x = data.sprite_rotation[0] / F;
       this.sprite_rotation.y = data.sprite_rotation[1] / F;
       this.sprite_rotation.z = data.sprite_rotation[2] / F;
