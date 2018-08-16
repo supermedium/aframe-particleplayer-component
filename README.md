@@ -71,6 +71,11 @@ For [A-Frame](https://aframe.io).
 | img	         | Texture to use in particles. None by default (flat plane)  |   |
 | interpolate	 | Interpolate particle positions among frames on slow replayings (big enough `dur` parameter) | false  |
 
+Events emmited:
+
+| loop | last frame reached, will start another loop |
+| finished | all loops and frames finished, animation ends |
+
 
 ### Cache file format
 

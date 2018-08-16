@@ -378,8 +378,10 @@ AFRAME.registerComponent('particleplayer', {
       ps.time += delta;
       if (ps.time >= this.data.dur) {
         if (ps.loopCount < ps.loopTotal) {
+          this.el.emit('loop');
           this.doLoop(ps);
         } else {
+          this.el.emit('finished');
           ps.active = false;
           ps.object3D.visible = false;
         }
