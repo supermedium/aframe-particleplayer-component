@@ -81,7 +81,6 @@ For [A-Frame](https://aframe.io).
 	version: '1.0',
 	precision: 1000,
 	rotation: true,
-	velocity: False,
 	sprite_rotation: [0, 0, 0],
 	frames: [<frames>]
 }

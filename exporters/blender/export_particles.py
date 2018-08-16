@@ -5,7 +5,6 @@ EXPORTED .JSON FILE FORMAT
 	version: '1.0',
 	precision: 1000,
 	rotation: true,
-	velocity: False,
 	sprite_rotation: [0, 0, 0],
 	frames: [<frames>]
 }
@@ -32,9 +31,6 @@ LAST_FRAME = 110
 # Export particle rotation
 ROTATION = False
 
-# Export particle velocity
-VELOCITY = False
-
 # Export one each <STEP> frames
 STEP = 1
 
@@ -51,7 +47,7 @@ import os
 from math import floor
 VERSION = '1.0'
 
-data = {'version': VERSION, 'precision': PRECISION, 'rotation': ROTATION, 'velocity': VELOCITY, 'frames': [], 'sprite_rotation': False }
+data = {'version': VERSION, 'precision': PRECISION, 'rotation': ROTATION, 'frames': [], 'sprite_rotation': False }
 
 def AA(n):
 	return floor(n * PRECISION)
@@ -91,10 +87,6 @@ def export():
 						part.append(AA( p.rotation.to_euler().z )) 
 						part.append(AA( -p.rotation.to_euler().y ))
 			
-					if VELOCITY:
-						part.append(AA( p.velocity.x ))
-						part.append(AA( p.velocity.z ))
-						part.append(AA( -p.velocity.y ))
 				else: 
 					part = 0
 					

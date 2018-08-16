@@ -166,11 +166,6 @@ AFRAME.registerComponent('particleplayer', {
             new THREE.Euler(p[3] / F, p[4] / F, p[5] / F) :
             null;
         }
-        if (data.velocity) {
-          this.framedata[f][i].velocity = alive ? 
-            new THREE.Vector3(p[velOffset + 3] / F, p[velOffset + 4] / F, p[velOffset + 5] / F) :
-            null;
-        }
 
         if (alive && this.restPositions[i] === undefined) {
           this.restPositions[i] = this.framedata[f][i].position;
