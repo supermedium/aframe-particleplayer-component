@@ -26,7 +26,8 @@
     "aframe-vr",
     "vr",
     "webvr",
-    "particleplayer"
+    "particleplayer",
+    "particle"
   ],
   "author": "feiss <github@feiss.be>",
   "license": "MIT",

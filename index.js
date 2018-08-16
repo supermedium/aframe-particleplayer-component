@@ -20,7 +20,7 @@ AFRAME.registerComponent('particleplayer', {
     pscale: {default: 1.0, type: 'float'},
     protation: {type: 'vec3'},
     cache: {default: 5, type: 'int'}, // number of simultaneous particle systems
-    shader: {default: 'flat', oneOf: ['flat', 'standard']},
+    shader: {default: 'flat', oneOf: ['flat', 'lambert', 'phong', 'standard']},
     color: {default: '#fff', type: 'color'},
     blending: {default: 'additive', oneOf: ['normal', 'additive', 'multiply', 'substractive']},
     img: {type: 'selector'},
@@ -44,6 +44,7 @@ AFRAME.registerComponent('particleplayer', {
     this.useRotation = false;
     this.sprite_rotation = false;
     this.protation = false;
+    this.allParticlesEl = null;
 
     // temporal vars for preventing gc
     this.v = new THREE.Vector3();
@@ -52,12 +53,18 @@ AFRAME.registerComponent('particleplayer', {
 
   update: function(oldData) {
     var params;
-    var blendings = {
+    const BLENDINGS = {
       'normal': THREE.NormalBlending,
       'additive': THREE.AdditiveBlending,
       'substractive': THREE.SubstractiveBlending,
       'multiply': THREE.MultiplyBlending
     };
+    const SHADERS = {
+      'flat': THREE.MeshBasicMaterial,
+      'lambert': THREE.MeshLambertMaterial,
+      'phong': THREE.MeshPhongMaterial,
+      'standard': THREE.MeshStandardMaterial
+    }
     var data = this.data;
 
     if (oldData.on !== data.on) {
@@ -87,27 +94,27 @@ AFRAME.registerComponent('particleplayer', {
     params = {
       color: new THREE.Color(data.color),
       side: THREE.DoubleSide,
-      blending: blendings[data.blending],
+      blending: BLENDINGS[data.blending],
       map: data.img ? new THREE.TextureLoader().load(data.img.src) : null,
       depthWrite: false,
       opacity: data.opacity,
       transparent: data.img || data.blending !== 'normal' || data.opacity < 1 ? true : false
     };
 
-    if (data.shader === 'flat') {
-      this.material = new THREE.MeshBasicMaterial(params);
+    if (SHADERS[data.shader] !== undefined) {
+      this.material = new SHADERS[data.shader](params);
     } else {
-      this.material = new THREE.MeshStandardMaterial(params);
+      this.material = new SHADERS['flat'](params);
     }
     
     var ratio = data.img ? data.img.width / data.img.height : 1;
     this.geometry = new THREE.PlaneBufferGeometry(0.1 * ratio * data.pscale, 0.1 * data.pscale);
 
-    this.allParticlesEl = document.createElement('a-entity');
-    this.allParticlesEl.id = "__json-particles-" + Math.floor(Math.random()*1000);
-    this.el.appendChild(this.allParticlesEl);
-
-    this.loadParticlesJSON(data.src, data.scale);
+    if (!this.allParticlesEl) {
+      this.allParticlesEl = document.createElement('a-entity');
+      this.allParticlesEl.id = "__json-particles-" + Math.floor(Math.random()*1000);
+      this.el.appendChild(this.allParticlesEl);
+    }
 
     if (this.sprite_rotation !== false){
       this.geometry.rotateX(this.sprite_rotation.x);
@@ -180,7 +187,15 @@ AFRAME.registerComponent('particleplayer', {
   cacheParticles: function (numParticleSystems) {
     var i;
     var p;
+    var allParticles;
     var loop = parseInt(this.data.loop);
+    
+    //remove old particles
+    allParticles = this.allParticlesEl.object3D;
+    while (allParticles.children.length) {
+      allParticles.remove(allParticles.children[0]);
+    }
+
     this.cache = [];
 
     if (isNaN(loop)) { 
@@ -208,7 +223,7 @@ AFRAME.registerComponent('particleplayer', {
         }
       }
 
-      this.allParticlesEl.object3D.add(ps.object3D);
+      allParticles.add(ps.object3D);
       this.cache.push(ps);
     }
   },
