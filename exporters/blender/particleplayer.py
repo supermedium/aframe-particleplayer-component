@@ -156,6 +156,7 @@ class ParticlePlayerPanel(bpy.types.Panel):
         layout = self.layout
 
         obj = context.object
+        if not obj: return
 
         row = layout.row()
         row.prop(obj, 'name', text="Source", icon="OBJECT_DATA")
@@ -180,7 +181,7 @@ class ParticlePlayerPanel(bpy.types.Panel):
 @persistent
 def sceneupdate_pre(scene):
     obj = scene.objects.active
-    if obj.particleplayer.path == "":
+    if obj and obj.particleplayer.path == "":
         obj.particleplayer.path = '//particles-' + obj.name + '.json'
 
 def register():
