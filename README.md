@@ -3,6 +3,9 @@
 [![Version](http://img.shields.io/npm/v/aframe-particleplayer-component.svg?style=flat-square)](https://npmjs.org/package/aframe-particleplayer-component)
 [![License](http://img.shields.io/npm/l/aframe-particleplayer-component.svg?style=flat-square)](https://npmjs.org/package/aframe-particleplayer-component)
 
+
+![cover gif](examples/magic.gif)
+
 This component allows replaying particle systems with baked behaviour. This is, instead of calculating the position of all particles on each frame using maths, that value is taken from a cache file (JSON format) with the movement of all the particles already calculated.
 
 Features:
@@ -38,15 +41,18 @@ Real-time particle systems behaviour (using already made solutions or your own) 
 | 1000 particles | 160K / 222K | 1.8M / 2.3M | 9.5M / 13M  |
 | 10000 particles| 1.6M / 2.2M | 18M / 23M   | 95M / 121M  |
 
-\*Values using default `precision` = 1000, without / with rotation exported
+\* Values using default `precision` = 1000, without / with rotation exported
+
+\** These are raw sizes, without server compression, which in the case of JSON is very significant.
 
 File size can be drastically reduced by:
 
-	+ Exporting less particles and shorter animation :D
-	+ Only exporting position, not rotation of particles
-	+ Use `step` parameter to export every x frames instead of all frames. Using the `interpolation` parameter of the component can do marvels here, and the difference can be unnoticeable.
++ Exporting less particles and shorter animation :D
++ Only exporting position, not rotation of particles
++ Use `step` parameter to export every x frames instead of all frames. Using the `interpolation` parameter of the component can do marvels here, and the difference can be unnoticeable:
 
 ![step comparison](examples/step.gif)
+
 
 So, as a general rule, you should **use this component for small and short simulations**. Ideal for visual effects like sparks, magic spells, small trails, visual accents, and such.
 
@@ -75,11 +81,17 @@ For [A-Frame](https://aframe.io).
 
 Events emmited:
 
+| event     | Description |
+| --------     | ----------- | 
 | loop | last frame reached, will start another loop |
 | finished | all loops and frames finished, animation ends |
 
 
 ### Cache file format
+
+You can generate a cache file using the [available exporters](https://github.com/feiss/aframe-particleplayer-component/tree/master/exporters) (only Blender for the moment, you are welcome to add support to other 3D Packages).
+
+You shouldn't care about this section unless you want to implement a new exporter. Cache file format is a plain JSON file with these main fields:
 
 **V.1.0**
 
