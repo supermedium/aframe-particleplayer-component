@@ -6,9 +6,9 @@
     <meta name="description" content="Play particle systems from cached files"></meta>
     <style>
       html {
-        background: #33425B;
-        color: #FAFAFA;
-        font-family: monospace;
+        background: #111;
+        color: #fda;
+        font-family: Arial, Helvetica, sans-serif;
         font-size: 20px;
         padding: 10px 20px;
       }
@@ -21,7 +21,7 @@
         padding: 15px 0;
       }
       img {
-        max-width: 200px;
+        max-width: 150px;
       }
       ul {
         display: flex;
@@ -37,12 +37,18 @@
         background-size: cover;
         display: block;
         padding: 0;
-        height: 320px;
-        width: 320px;
+        height: 220px;
+        width: 220px;
       }
       ul h3,
       ul p {
         max-width: 320px;
+        font-size: 20px;
+        margin-bottom: 0;
+      }
+      ul p{
+        font-size: 16px;
+        color: #aaa;
       }
     </style>
   </head>
@@ -51,9 +57,24 @@
 
     <ul>
       <li>
-        <a href="examples/basic/" style="background-image: url(https://cloud.githubusercontent.com/assets/674727/24217331/ba3d5b86-0efc-11e7-8a7c-ac74b3f35a65.png)"></a>
-        <h3>Basic</h3>
-        <p>This is a basic example.</p>
+        <a href="examples/fireworks/" style="background-image: url(examples/fireworks.gif)"></a>
+        <h3>Fireworks</h3>
+        <p>Press space</p>
+      </li>
+      <li>
+        <a href="examples/vortex/" style="background-image: url(examples/vortex.gif)"></a>
+        <h3>Vortex</h3>
+        <p>Twister-like formation</p>
+      </li>
+      <li>
+        <a href="examples/magic/" style="background-image: url(examples/magic.gif)"></a>
+        <h3>Magic</h3>
+        <p>Three particle systems combined</p>
+      </li>
+      <li>
+        <a href="examples/test/" style="background-image: url(examples/test.gif)"></a>
+        <h3>Test</h3>
+        <p>Basic example for testing purposes</p>
       </li>
     </ul>
 

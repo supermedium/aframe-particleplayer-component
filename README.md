@@ -46,6 +46,8 @@ File size can be drastically reduced by:
 	+ Only exporting position, not rotation of particles
 	+ Use `step` parameter to export every x frames instead of all frames. Using the `interpolation` parameter of the component can do marvels here, and the difference can be unnoticeable.
 
+![step comparison](examples/step.gif)
+
 So, as a general rule, you should **use this component for small and short simulations**. Ideal for visual effects like sparks, magic spells, small trails, visual accents, and such.
 
 

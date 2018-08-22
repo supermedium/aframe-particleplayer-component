@@ -4,10 +4,8 @@
     <meta charset="utf-8">
     <title>A-Frame Particle Player Component - Magic</title>
     <meta name="description" content="Magic example for Particle Player component."></meta>
-    <!--<script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>-->
-    <script src="aframe.js"></script>
-    <!--<script src="../../dist/aframe-particleplayer-component.min.js"></script>-->
-    <script src="../../index.js"></script>
+    <script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>-->
+    <script src="../../dist/aframe-particleplayer-component.min.js"></script>
   </head>
   <body>
     <a-scene background="color: #222">
@@ -30,9 +28,11 @@
         <a-entity particleplayer="delay: 500; src: #particlesDustJson; img: #dustTex; dur: 4000; count: 100%; scale: 2.5; pscale:1 interpolate: false; shader: standard; cache: 1; loop: true; color: #aaf"></a-entity>
       </a-entity>
 
+      <!-- lights -->
       <a-light position="4 5 -10" type="point" color="#fca"></a-light>
       <a-light position="-6 14 20" type="point" color="#fca"></a-light>
 
+      <!-- floor and walls -->
       <a-plane width="10" height="10" rotation="-90 90 0" material="src: #floorTex; roughnessMap: #floorRoughTex; roughness: 0.6"></a-plane>
       <a-plane width="10" height="10" position="0 5 -5" material="src: #floorTex; roughnessMap: #floorRoughTex; roughness: 0.6"></a-plane>
       <a-plane width="10" height="10" position="5 5 0" rotation="0 -90 0" material="src: #floorTex; roughnessMap: #floorRoughTex; roughness: 0.6"></a-plane>
