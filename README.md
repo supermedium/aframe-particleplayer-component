@@ -4,19 +4,24 @@
 [![License](http://img.shields.io/npm/l/aframe-particleplayer-component.svg?style=flat-square)](https://npmjs.org/package/aframe-particleplayer-component)
 
 
-![cover gif](examples/magic.gif)
 
 This component allows replaying particle systems with baked behaviour. This is, instead of calculating the position of all particles on each frame using maths, that value is taken from a cache file (JSON format) with the movement of all the particles already calculated.
 
+![cover gif](examples/header.gif)
+
+In short:
+1. Install Blender add-on (or other exporter plugin when available)
+2. Design your particle system in Blender, and export a JSON
+3. Use this component to load the JSON and reproduce same particle system.
+
 Features:
-* Baked particle systems
+* Baked particle system loading
 * Animation speed / duration
 * Frame interpolation (no frame jumps when replaying at slow speeds)
-* Replay only a percentage of particles (randomly picked)
-* Delaying and looping
+* Replay only a percentage of particles (randomly picking on each loop)
+* Delay and loop
 * Overall simulation and particle scaling
 * Particles texture, color, shader and blending
-
 
 Real-time particle systems behaviour (using already made solutions or your own) is often good enough but sometimes specific 3D packages (Blender, Maya, Houdini, Cinema4D or many others, for example) can give you much more control and direction, with lots of parameters, forces and influencers. This is what is this component for, and has some pros and cons that you should be aware of:
 
