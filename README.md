@@ -7,12 +7,12 @@
 
 This component allows replaying particle systems with baked behaviour. This is, instead of calculating the position of all particles on each frame using maths, that value is taken from a cache file (JSON format) with the movement of all the particles already calculated.
 
-![cover gif](examples/header.gif)
-
-In short:
+**In short:**
 1. Install Blender add-on (or other exporter plugin when available)
 2. Design your particle system in Blender, and export a JSON
 3. Use this component to load the JSON and reproduce same particle system.
+
+![cover gif](examples/header.gif)
 
 Features:
 * Baked particle system loading
