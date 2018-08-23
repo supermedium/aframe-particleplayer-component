@@ -31,5 +31,5 @@ You will find the exporter in the tools sidebar on the left, in the **A-Frame** 
 All parameters determine final file size. If you want a smaller file, try reducing `precision`, increasing `step`, or not exporting the `rotation` if is not necessary.
 
 To preview particles in blender and finetune initial rotation, use a textured plane object in **render / dupli objects** with `rotation` option on:
-![dupli](dupli.jpg)
+![dupli](readme/dupli.jpg)
 
