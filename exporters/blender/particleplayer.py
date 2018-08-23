@@ -95,6 +95,7 @@ def export_main(context, operator):
     f.write(json.dumps(data, separators = (',',':')))
     f.close()
     operator.report({'INFO'}, 'Saved ' + os.path.realpath(f.name))
+    props.done = 1000
     return True
 
 class ParticlePlayerProps(bpy.types.PropertyGroup):
@@ -113,6 +114,7 @@ class ParticlePlayerProps(bpy.types.PropertyGroup):
                 ('100000', '100000', ''),
                 ('1000000', '1000000', ''))
             )
+    done = bpy.props.IntProperty(default=0)
 
 class ParticlePlayerAutoRange(bpy.types.Operator):
     bl_idname = "object.particleplayer_autorange"
@@ -173,14 +175,16 @@ class ParticlePlayerPanel(bpy.types.Panel):
         row.prop(obj.particleplayer, "precision", text="")
 
         row = layout.row()
-        row.prop(obj.particleplayer, "path", text="Save to:")
+        row.prop(obj.particleplayer, "path", text="Save to")
 
+        done = obj.particleplayer.done
         row = layout.row()
-        row.operator("object.particleplayer_export", icon = "PARTICLES")
+        row.operator("object.particleplayer_export", text = "DONE!" if done > 0 else "Export",  icon = "FILE_TICK" if done > 0 else "PARTICLES")
 
 @persistent
 def sceneupdate_pre(scene):
     obj = scene.objects.active
+    if obj.particleplayer.done > 0: obj.particleplayer.done -= 1
     if obj and obj.particleplayer.path == "":
         obj.particleplayer.path = '//particles-' + obj.name + '.json'
 
@@ -195,6 +199,3 @@ def unregister():
 
 if __name__ == "__main__":
     register()
-
-    # test call
-    #bpy.ops.object.particleplayer()
