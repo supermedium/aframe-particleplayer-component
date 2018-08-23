@@ -13,18 +13,20 @@
 
 ## Usage
 
+You will find the exporter in the tools sidebar on the left, in the **A-Frame** tab on the bottom.
+
 ![gui](readme/gui.jpg)
 
 
-+ **Source** Current selected object, which must have a particle system attached. You can type another name here to rename the object.
-+ **Frames** Use this fields to select which frames of the animation you want to export
-  + **From** First frame to export
-  + **To** Last frame to export
-  + **Step** If you want to export one each X frames. Use `1` for exporting all frames, `2` for exporting one each two frames, etc.
-  + **From scene** Click this button to fill `From` and `To` fields automatically from the current animation range in the scene.
-+ **Rotation** Check if you want to export the rotation of the particles too (not only the position).
-+ **Precision / 1000** Precision of the values to export. More zeroes, more precision.
-+ **Save to** Output file path. By default a filename is set using the object's name, but you can change it.
++ **Source**: Current selected object, which must have a particle system attached. You can type another name here to rename the object.
++ **Frames**: Use these fields to select which frames of the animation you want to export
+  + **From**: First frame
+  + **To**: Last frame
+  + **Step**: If you want to export one each X frames. Use `1` for exporting all frames, `2` for exporting one each two frames, etc.
+  + **From scene**: Click this button to fill `From` and `To` fields automatically from the current animation range in the scene.
++ **Rotation**: Check if you want to export the rotation of the particles too (not only the position).
++ **Precision / 1000**: Precision of the values to export. More zeroes, more precision.
++ **Save to**: Output file path. By default a filename is set using the object's name, but you can change it.
 
 All parameters determine final file size. If you want a smaller file, try reducing `precision`, increasing `step`, or not exporting the `rotation` if is not necessary.
 
