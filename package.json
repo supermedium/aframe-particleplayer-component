@@ -37,7 +37,7 @@
   },
   "homepage": "https://github.com/supermedium/aframe-particleplayer-component#readme",
   "devDependencies": {
-    "aframe": "*",
+    "aframe": "github:aframevr/aframe#master",
     "browserify": "^13.0.0",
     "budo": "^8.2.2",
     "chai": "^3.4.1",
