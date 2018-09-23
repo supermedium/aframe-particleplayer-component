@@ -38,11 +38,11 @@ AFRAME.registerComponent('particleplayer', {
 
   init: function() {
     this.framedata = null;
-    this.restPositions = null; // position at first frame each particle is alive
+    this.restPositions = null;  // position at first frame each particle is alive
     this.restRotations = null;
     this.numFrames = 0;
-    this.numParticles = 0; // total number of particles per system
-    this.count = 0; // actual number of particles to spawn per event (data.count)
+    this.numParticles = 0;  // total number of particles per system
+    this.count = 0;  // actual number of particles to spawn per event (data.count)
     this.systems = null;
     this.cache = null;
     this.material = null;
@@ -142,7 +142,7 @@ AFRAME.registerComponent('particleplayer', {
       this.geometry.rotateZ((this.data.protation.z * Math.PI) / 180);
     }
 
-    this.cacheParticles(data.cache);
+    this.createParticles(data.cache);
 
     if (data.on === 'init') {
       this.start();
@@ -151,7 +151,7 @@ AFRAME.registerComponent('particleplayer', {
 
   loadParticlesJSON: function(json, scale) {
     var data = JSON.parse(json.data);
-    var p; // particle
+    var p;  // particle
     var alive;
     var frames = data.frames;
     var F = data.precision;
@@ -170,10 +170,10 @@ AFRAME.registerComponent('particleplayer', {
     }
 
     this.framedata = new Array(frames.length);
-    for (var f = 0; f < frames.length; f++) {
+    for (let f = 0; f < frames.length; f++) {
       this.framedata[f] = new Array(frames[f].length);
-      for (var i = 0; i < frames[f].length; i++) {
-        p = frames[f][i]; // data of particle i in frame f
+      for (let i = 0; i < frames[f].length; i++) {
+        p = frames[f][i];  // data of particle i in frame f
         alive = p !== 0;
 
         this.framedata[f][i] = {
@@ -203,13 +203,13 @@ AFRAME.registerComponent('particleplayer', {
     }
   },
 
-  cacheParticles: function(numParticleSystems) {
+  createParticles: function(numParticleSystems) {
     var i;
     var p;
     var allParticles;
     var loop = parseInt(this.data.loop);
 
-    //remove old particles
+    // remove old particles
     allParticles = this.allParticlesEl.object3D;
     while (allParticles.children.length) {
       allParticles.remove(allParticles.children[0]);
@@ -311,7 +311,8 @@ AFRAME.registerComponent('particleplayer', {
         part.rotation.copy(this.restRotations[i]);
       }
     } else {
-      //part.lookAt(this.camera.position); // lookAt does not support rotated or translated parents! :_(
+      // lookAt does not support rotated or translated parents! :_(
+      // part.lookAt(this.camera.position);
     }
   },
 
@@ -350,17 +351,17 @@ AFRAME.registerComponent('particleplayer', {
   },
 
   tick: function(time, delta) {
-    var j, i; // loop vars
-    var particleSystem; // current particle system
-    var frame; // current particle system frame
-    var particle; // current particle
-    var particleIndex; // index of current particle
-    var fdata; // all particles data in current frame
-    var fdataNext; // next frame (for interpolation)
+    var j, i;  // loop vars
+    var particleSystem;  // current particle system
+    var frame;  // current particle system frame
+    var particle;  // current particle
+    var particleIndex;  // index of current particle
+    var fdata;  // all particles data in current frame
+    var fdataNext;  // next frame (for interpolation)
     var useRotation = this.useRotation;
-    var frameTime; // time in current frame (for interpolation)
-    var relTime; // current particle system relative time (0-1)
-    var interpolate; // whether interpolate between frames or not
+    var frameTime;  // time in current frame (for interpolation)
+    var relTime;  // current particle system relative time (0-1)
+    var interpolate;  // whether interpolate between frames or not
 
     for (i = 0; i < this.cache.length; i++) {
       particleSystem = this.cache[i];
