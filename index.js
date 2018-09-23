@@ -1,7 +1,9 @@
 /* global AFRAME */
 
 if (typeof AFRAME === 'undefined') {
-  throw new Error('Component attempted to register before AFRAME was available.');
+  throw new Error(
+    'Component attempted to register before AFRAME was available.'
+  );
 }
 
 /**
@@ -9,26 +11,32 @@ if (typeof AFRAME === 'undefined') {
  */
 AFRAME.registerComponent('particleplayer', {
   schema: {
-    blending: {default: 'additive', oneOf: ['normal', 'additive', 'multiply', 'substractive']},
-    cache: {default: 5, type: 'int'}, // number of simultaneous particle systems
-    color: {default: '#fff', type: 'color'},
-    count: {default: '100%'},
-    delay: {default: 0, type: 'int'},
-    dur: {default: 1000, type: 'int'},
-    img: {type: 'selector'},
-    interpolate: {default: false},
-    loop: {default: 'false'},
-    on: {default: 'init'},
-    protation: {type: 'vec3'},
-    pscale: {default: 1.0, type: 'float'},
-    scale: {default: 1.0, type: 'float'},
-    shader: {default: 'flat', oneOf: ['flat', 'lambert', 'phong', 'standard']},
-    src: {type: 'selector'}
+    blending: {
+      default: 'additive',
+      oneOf: ['normal', 'additive', 'multiply', 'substractive']
+    },
+    cache: { default: 5, type: 'int' }, // number of simultaneous particle systems
+    color: { default: '#fff', type: 'color' },
+    count: { default: '100%' },
+    delay: { default: 0, type: 'int' },
+    dur: { default: 1000, type: 'int' },
+    img: { type: 'selector' },
+    interpolate: { default: false },
+    loop: { default: 'false' },
+    on: { default: 'init' },
+    protation: { type: 'vec3' },
+    pscale: { default: 1.0, type: 'float' },
+    scale: { default: 1.0, type: 'float' },
+    shader: {
+      default: 'flat',
+      oneOf: ['flat', 'lambert', 'phong', 'standard']
+    },
+    src: { type: 'selector' }
   },
 
   multiple: true,
 
-  init: function () {
+  init: function() {
     this.framedata = null;
     this.restPositions = null; // position at first frame each particle is alive
     this.restRotations = null;
@@ -55,21 +63,23 @@ AFRAME.registerComponent('particleplayer', {
   update: function(oldData) {
     var params;
     const BLENDINGS = {
-      'normal': THREE.NormalBlending,
-      'additive': THREE.AdditiveBlending,
-      'substractive': THREE.SubstractiveBlending,
-      'multiply': THREE.MultiplyBlending
+      normal: THREE.NormalBlending,
+      additive: THREE.AdditiveBlending,
+      substractive: THREE.SubstractiveBlending,
+      multiply: THREE.MultiplyBlending
     };
     const SHADERS = {
-      'flat': THREE.MeshBasicMaterial,
-      'lambert': THREE.MeshLambertMaterial,
-      'phong': THREE.MeshPhongMaterial,
-      'standard': THREE.MeshStandardMaterial
-    }
+      flat: THREE.MeshBasicMaterial,
+      lambert: THREE.MeshLambertMaterial,
+      phong: THREE.MeshPhongMaterial,
+      standard: THREE.MeshStandardMaterial
+    };
     var data = this.data;
 
     if (oldData.on !== data.on) {
-      if (oldData.on) { this.el.removeEventListener(oldData.on, this.start)}
+      if (oldData.on) {
+        this.el.removeEventListener(oldData.on, this.start);
+      }
       if (data.on !== 'play') {
         this.el.addEventListener(data.on, this.start.bind(this));
       }
@@ -80,8 +90,10 @@ AFRAME.registerComponent('particleplayer', {
     this.numFrames = this.framedata.length;
     this.numParticles = this.numFrames > 0 ? this.framedata[0].length : 0;
 
-    if (data.count[data.count.length-1] == '%') {
-      this.count = Math.floor(parseInt(data.count) * this.numParticles / 100.0);
+    if (data.count[data.count.length - 1] == '%') {
+      this.count = Math.floor(
+        (parseInt(data.count) * this.numParticles) / 100.0
+      );
     } else {
       this.count = parseInt(data.count);
     }
@@ -91,7 +103,6 @@ AFRAME.registerComponent('particleplayer', {
 
     this.indexPool = new Array(this.numParticles);
 
-
     params = {
       color: new THREE.Color(data.color),
       side: THREE.DoubleSide,
@@ -99,7 +110,10 @@ AFRAME.registerComponent('particleplayer', {
       map: data.img ? new THREE.TextureLoader().load(data.img.src) : null,
       depthWrite: false,
       opacity: data.opacity,
-      transparent: data.img || data.blending !== 'normal' || data.opacity < 1 ? true : false
+      transparent:
+        data.img || data.blending !== 'normal' || data.opacity < 1
+          ? true
+          : false
     };
 
     if (SHADERS[data.shader] !== undefined) {
@@ -109,23 +123,26 @@ AFRAME.registerComponent('particleplayer', {
     }
 
     var ratio = data.img ? data.img.width / data.img.height : 1;
-    this.geometry = new THREE.PlaneBufferGeometry(0.1 * ratio * data.pscale, 0.1 * data.pscale);
+    this.geometry = new THREE.PlaneBufferGeometry(
+      0.1 * ratio * data.pscale,
+      0.1 * data.pscale
+    );
 
     if (!this.allParticlesEl) {
       this.allParticlesEl = document.createElement('a-entity');
-      this.allParticlesEl.id = "__json-particles-" + Math.floor(Math.random()*1000);
+      this.allParticlesEl.id =
+        '__json-particles-' + Math.floor(Math.random() * 1000);
       this.el.appendChild(this.allParticlesEl);
     }
 
-    if (this.sprite_rotation !== false){
+    if (this.sprite_rotation !== false) {
       this.geometry.rotateX(this.sprite_rotation.x);
       this.geometry.rotateY(this.sprite_rotation.y);
       this.geometry.rotateZ(this.sprite_rotation.z);
-    }
-    else {
-      this.geometry.rotateX(this.data.protation.x * Math.PI / 180);
-      this.geometry.rotateY(this.data.protation.y * Math.PI / 180);
-      this.geometry.rotateZ(this.data.protation.z * Math.PI / 180);
+    } else {
+      this.geometry.rotateX((this.data.protation.x * Math.PI) / 180);
+      this.geometry.rotateY((this.data.protation.y * Math.PI) / 180);
+      this.geometry.rotateZ((this.data.protation.z * Math.PI) / 180);
     }
 
     this.cacheParticles(data.cache);
@@ -135,7 +152,7 @@ AFRAME.registerComponent('particleplayer', {
     }
   },
 
-  loadParticlesJSON: function (json, scale) {
+  loadParticlesJSON: function(json, scale) {
     var data = JSON.parse(json.data);
     var p; // particle
     var alive;
@@ -152,8 +169,9 @@ AFRAME.registerComponent('particleplayer', {
       this.sprite_rotation.x = data.sprite_rotation[0] / F;
       this.sprite_rotation.y = data.sprite_rotation[1] / F;
       this.sprite_rotation.z = data.sprite_rotation[2] / F;
+    } else {
+      this.sprite_rotation = false;
     }
-    else { this.sprite_rotation = false; }
 
     this.framedata = new Array(frames.length);
     for (var f = 0; f < frames.length; f++) {
@@ -163,16 +181,20 @@ AFRAME.registerComponent('particleplayer', {
         alive = p !== 0;
 
         this.framedata[f][i] = {
-          position: alive ?
-            new THREE.Vector3(p[0] / F * scale, p[1] / F * scale, p[2] / F * scale) :
-            null,
+          position: alive
+            ? new THREE.Vector3(
+                (p[0] / F) * scale,
+                (p[1] / F) * scale,
+                (p[2] / F) * scale
+              )
+            : null,
           alive: alive
         };
 
         if (data.rotation) {
-          this.framedata[f][i].rotation = alive ?
-            new THREE.Euler(p[3] / F, p[4] / F, p[5] / F) :
-            null;
+          this.framedata[f][i].rotation = alive
+            ? new THREE.Euler(p[3] / F, p[4] / F, p[5] / F)
+            : null;
         }
 
         if (alive && this.restPositions[i] === undefined) {
@@ -185,7 +207,7 @@ AFRAME.registerComponent('particleplayer', {
     }
   },
 
-  cacheParticles: function (numParticleSystems) {
+  cacheParticles: function(numParticleSystems) {
     var i;
     var p;
     var allParticles;
@@ -229,15 +251,15 @@ AFRAME.registerComponent('particleplayer', {
     }
   },
 
-  start: function (evt) {
+  start: function(evt) {
     if (this.data.delay > 0) {
-      setTimeout( () => this.startAfterDelay(evt), this.data.delay);
+      setTimeout(() => this.startAfterDelay(evt), this.data.delay);
     } else {
       this.startAfterDelay(evt);
     }
   },
 
-  startAfterDelay: function (evt) {
+  startAfterDelay: function(evt) {
     // position, rotation
     var found = -1;
     var ps;
@@ -246,12 +268,16 @@ AFRAME.registerComponent('particleplayer', {
     var position = evt ? evt.detail['position'] : null;
     var rotation = evt ? evt.detail['rotation'] : null;
 
-    if (!(position instanceof THREE.Vector3)) { position = new THREE.Vector3(); }
-    if (!(rotation instanceof THREE.Euler)) { rotation = new THREE.Euler(); }
+    if (!(position instanceof THREE.Vector3)) {
+      position = new THREE.Vector3();
+    }
+    if (!(rotation instanceof THREE.Euler)) {
+      rotation = new THREE.Euler();
+    }
 
     // find available (or oldest) particle system
     for (var i = 0; i < this.cache.length; i++) {
-      if (this.cache[i].active === false){
+      if (this.cache[i].active === false) {
         found = i;
         break;
       }
@@ -273,29 +299,33 @@ AFRAME.registerComponent('particleplayer', {
     this.resetParticles(ps);
   },
 
-  doLoop: function (ps) {
+  doLoop: function(ps) {
     ps.loopCount++;
     ps.frame = -1;
     ps.time = 0;
     this.resetParticles(ps);
   },
 
-  resetParticle: function (part, i) {
+  resetParticle: function(part, i) {
     part.visible = false;
-    if (this.restPositions[i]) { part.position.copy(this.restPositions[i]); }
-    if (this.useRotation){
-      if (this.restRotations[i]) { part.rotation.copy(this.restRotations[i]); }
+    if (this.restPositions[i]) {
+      part.position.copy(this.restPositions[i]);
+    }
+    if (this.useRotation) {
+      if (this.restRotations[i]) {
+        part.rotation.copy(this.restRotations[i]);
+      }
     } else {
       //part.lookAt(this.camera.position); // lookAt does not support rotated or translated parents! :_(
     }
   },
 
-/**
- * When starting or finishing (looping) animation, this resets particles
- * to their initial position and, if user asked for replaying less than 100%
- * of particles, randomly choose them.
- */
-  resetParticles: function (ps) {
+  /**
+   * When starting or finishing (looping) animation, this resets particles
+   * to their initial position and, if user asked for replaying less than 100%
+   * of particles, randomly choose them.
+   */
+  resetParticles: function(ps) {
     var i;
     var pi;
     var part;
@@ -313,7 +343,7 @@ AFRAME.registerComponent('particleplayer', {
     // hide particles from last animation and initialize indexPool
     for (i = 0; i < this.numParticles; i++) {
       if (i < this.count) {
-        ps.object3D.children[ ps.activeParticles[i] ].visible = false;
+        ps.object3D.children[ps.activeParticles[i]].visible = false;
       }
       this.indexPool[i] = i;
     }
@@ -327,7 +357,7 @@ AFRAME.registerComponent('particleplayer', {
     }
   },
 
-  tick: function (time, delta) {
+  tick: function(time, delta) {
     var j, i; // loop vars
     var ps; // current particle system
     var frame; // current particle system frame
@@ -346,19 +376,23 @@ AFRAME.registerComponent('particleplayer', {
 
       // if the duration is so short that there's no need to interpolate, don't do it
       // even if user asked for it.
-      interpolate = this.data.interpolate && this.data.dur / this.numFrames > delta;
+      interpolate =
+        this.data.interpolate && this.data.dur / this.numFrames > delta;
 
       relTime = ps.time / this.data.dur;
       frame = relTime * this.numFrames;
       fdata = this.framedata[Math.floor(frame)];
       if (interpolate) {
         frameTime = frame - Math.floor(frame);
-        fdataNext = frame < this.numFrames - 1 ? this.framedata[Math.floor(frame) + 1] : null;
+        fdataNext =
+          frame < this.numFrames - 1
+            ? this.framedata[Math.floor(frame) + 1]
+            : null;
       }
       for (j = 0; j < ps.activeParticles.length; j++) {
         pi = ps.activeParticles[j];
         particle = ps.object3D.children[pi];
-        if (!fdata[pi].alive){
+        if (!fdata[pi].alive) {
           particle.visible = false;
           continue;
         }
@@ -366,7 +400,11 @@ AFRAME.registerComponent('particleplayer', {
         particle.visible = true;
 
         if (interpolate && fdataNext && fdataNext[pi].alive) {
-          particle.position.lerpVectors(fdata[pi].position, fdataNext[pi].position, frameTime);
+          particle.position.lerpVectors(
+            fdata[pi].position,
+            fdataNext[pi].position,
+            frameTime
+          );
         } else {
           particle.position.copy(fdata[pi].position);
         }
@@ -390,5 +428,4 @@ AFRAME.registerComponent('particleplayer', {
       }
     }
   }
-
 });
