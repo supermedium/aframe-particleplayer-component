@@ -30,7 +30,7 @@ AFRAME.registerComponent('particleplayer', {
   init: function () {
     this.framedata = null;
     this.restPositions = null; // position at first frame each particle is alive
-    this.restRotations = null; 
+    this.restRotations = null;
     this.numFrames = 0;
     this.numParticles = 0; // total number of particles per system
     this.count = 0; // actual number of particles to spawn per event (data.count)
@@ -81,13 +81,13 @@ AFRAME.registerComponent('particleplayer', {
 
     if (data.count[data.count.length-1] == '%') {
       this.count = Math.floor(parseInt(data.count) * this.numParticles / 100.0);
-    } else { 
-      this.count = parseInt(data.count); 
+    } else {
+      this.count = parseInt(data.count);
     }
     this.count = Math.min(this.numParticles, Math.max(0, this.count));
 
     this.msPerFrame = data.dur / this.numFrames;
- 
+
     this.indexPool = new Array(this.numParticles);
 
 
@@ -106,7 +106,7 @@ AFRAME.registerComponent('particleplayer', {
     } else {
       this.material = new SHADERS['flat'](params);
     }
-    
+
     var ratio = data.img ? data.img.width / data.img.height : 1;
     this.geometry = new THREE.PlaneBufferGeometry(0.1 * ratio * data.pscale, 0.1 * data.pscale);
 
@@ -142,7 +142,7 @@ AFRAME.registerComponent('particleplayer', {
     var velOffset = data.rotation ? 3 : 0;
     var F = data.precision;
     this.restPositions = [];
-    this.restRotations = []; 
+    this.restRotations = [];
 
     this.useRotation = data.rotation;
 
@@ -162,14 +162,14 @@ AFRAME.registerComponent('particleplayer', {
         alive = p !== 0;
 
         this.framedata[f][i] = {
-          position: alive ? 
+          position: alive ?
             new THREE.Vector3(p[0] / F * scale, p[1] / F * scale, p[2] / F * scale) :
             null,
           alive: alive
         };
 
         if (data.rotation) {
-          this.framedata[f][i].rotation = alive ? 
+          this.framedata[f][i].rotation = alive ?
             new THREE.Euler(p[3] / F, p[4] / F, p[5] / F) :
             null;
         }
@@ -189,7 +189,7 @@ AFRAME.registerComponent('particleplayer', {
     var p;
     var allParticles;
     var loop = parseInt(this.data.loop);
-    
+
     //remove old particles
     allParticles = this.allParticlesEl.object3D;
     while (allParticles.children.length) {
@@ -198,8 +198,8 @@ AFRAME.registerComponent('particleplayer', {
 
     this.cache = [];
 
-    if (isNaN(loop)) { 
-      loop = this.data.loop === 'true' ? Number.MAX_VALUE : 0; 
+    if (isNaN(loop)) {
+      loop = this.data.loop === 'true' ? Number.MAX_VALUE : 0;
     }
 
     for (i = 0; i < numParticleSystems; i++) {
@@ -236,7 +236,7 @@ AFRAME.registerComponent('particleplayer', {
     }
   },
 
-  startAfterDelay: function (evt) { 
+  startAfterDelay: function (evt) {
     // position, rotation
     var found = -1;
     var ps;
@@ -303,14 +303,14 @@ AFRAME.registerComponent('particleplayer', {
 
     // no picking, just hide and reset
     if (this.count === this.numParticles) {
-      for (i = 0; i < this.numParticles; i++) { 
+      for (i = 0; i < this.numParticles; i++) {
         this.resetParticle(ps.object3D.children[i], i);
       }
       return;
     }
 
     // hide particles from last animation and initialize indexPool
-    for (i = 0; i < this.numParticles; i++) { 
+    for (i = 0; i < this.numParticles; i++) {
       if (i < this.count) {
         ps.object3D.children[ ps.activeParticles[i] ].visible = false;
       }
@@ -318,7 +318,7 @@ AFRAME.registerComponent('particleplayer', {
     }
 
     // scramble indexPool
-    for (i = 0; i < this.count - 1; i++) { 
+    for (i = 0; i < this.count - 1; i++) {
       rand = i + Math.floor(Math.random() * (this.numParticles - i));
       ps.activeParticles[i] = this.indexPool[rand];
       this.indexPool[rand] = this.indexPool[i];
@@ -342,7 +342,7 @@ AFRAME.registerComponent('particleplayer', {
     for (i = 0; i < this.cache.length; i++) {
       ps = this.cache[i];
       if (!ps.active) continue;
-      
+
       // if the duration is so short that there's no need to interpolate, don't do it
       // even if user asked for it.
       interpolate = this.data.interpolate && this.data.dur / this.numFrames > delta;
@@ -360,7 +360,7 @@ AFRAME.registerComponent('particleplayer', {
         if (!fdata[pi].alive){
           particle.visible = false;
           continue;
-        } 
+        }
 
         particle.visible = true;
 
