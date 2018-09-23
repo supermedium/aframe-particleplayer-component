@@ -25,7 +25,7 @@ AFRAME.registerComponent('particleplayer', {
     loop: {default: 'false'},
     on: {default: 'init'},
     protation: {type: 'vec3'},
-    particleSystemcale: {default: 1.0, type: 'float'},
+    pscale: {default: 1.0, type: 'float'},
     scale: {default: 1.0, type: 'float'},
     shader: {
       default: 'flat',
@@ -121,8 +121,8 @@ AFRAME.registerComponent('particleplayer', {
 
     var ratio = data.img ? data.img.width / data.img.height : 1;
     this.geometry = new THREE.PlaneBufferGeometry(
-      0.1 * ratio * data.particleSystemcale,
-      0.1 * data.particleSystemcale
+      0.1 * ratio * data.pscale,
+      0.1 * data.pscale
     );
 
     if (!this.allParticlesEl) {
