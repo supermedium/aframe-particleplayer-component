@@ -1,10 +1,28 @@
 /* global AFRAME */
 
+require('./vendor/BufferGeometryUtils');
+
 if (typeof AFRAME === 'undefined') {
   throw new Error(
     'Component attempted to register before AFRAME was available.'
   );
 }
+
+const NUM_VERTICES = 6;
+
+const BLENDINGS = {
+  normal: THREE.NormalBlending,
+  additive: THREE.AdditiveBlending,
+  substractive: THREE.SubstractiveBlending,
+  multiply: THREE.MultiplyBlending
+};
+
+const SHADERS = {
+  flat: THREE.MeshBasicMaterial,
+  lambert: THREE.MeshLambertMaterial,
+  phong: THREE.MeshPhongMaterial,
+  standard: THREE.MeshStandardMaterial
+};
 
 /**
  * Particle Player component for A-Frame.
@@ -38,13 +56,13 @@ AFRAME.registerComponent('particleplayer', {
 
   init: function() {
     this.framedata = null;
-    this.restPositions = null;  // position at first frame each particle is alive
-    this.restRotations = null;
+    this.restPositions = [];  // position at first frame each particle is alive
+    this.restRotations = [];
     this.numFrames = 0;
     this.numParticles = 0;  // total number of particles per system
-    this.count = 0;  // actual number of particles to spawn per event (data.count)
+    this.particleCount = 0;  // actual number of particles to spawn per event (data.count)
     this.systems = null;
-    this.cache = null;
+    this.cache = [];
     this.material = null;
     this.geometry = null;
     this.frame = 0;
@@ -53,7 +71,6 @@ AFRAME.registerComponent('particleplayer', {
     this.useRotation = false;
     this.sprite_rotation = false;
     this.protation = false;
-    this.allParticlesEl = null;
 
     // temporal vars for preventing gc
     this.v = new THREE.Vector3();
@@ -62,19 +79,10 @@ AFRAME.registerComponent('particleplayer', {
 
   update: function(oldData) {
     var params;
-    const BLENDINGS = {
-      normal: THREE.NormalBlending,
-      additive: THREE.AdditiveBlending,
-      substractive: THREE.SubstractiveBlending,
-      multiply: THREE.MultiplyBlending
-    };
-    const SHADERS = {
-      flat: THREE.MeshBasicMaterial,
-      lambert: THREE.MeshLambertMaterial,
-      phong: THREE.MeshPhongMaterial,
-      standard: THREE.MeshStandardMaterial
-    };
-    var data = this.data;
+
+    const data = this.data;
+
+    if (!data.src) { return; }
 
     if (oldData.on !== data.on) {
       if (oldData.on) {
@@ -91,13 +99,13 @@ AFRAME.registerComponent('particleplayer', {
     this.numParticles = this.numFrames > 0 ? this.framedata[0].length : 0;
 
     if (data.count[data.count.length - 1] === '%') {
-      this.count = Math.floor(
+      this.particleCount = Math.floor(
         (parseInt(data.count) * this.numParticles) / 100.0
       );
     } else {
-      this.count = parseInt(data.count);
+      this.particleCount = parseInt(data.count);
     }
-    this.count = Math.min(this.numParticles, Math.max(0, this.count));
+    this.particleCount = Math.min(this.numParticles, Math.max(0, this.particleCount));
 
     this.msPerFrame = data.dur / this.numFrames;
 
@@ -119,19 +127,6 @@ AFRAME.registerComponent('particleplayer', {
       this.material = new SHADERS['flat'](params);
     }
 
-    var ratio = data.img ? data.img.width / data.img.height : 1;
-    this.geometry = new THREE.PlaneBufferGeometry(
-      0.1 * ratio * data.pscale,
-      0.1 * data.pscale
-    );
-
-    if (!this.allParticlesEl) {
-      this.allParticlesEl = document.createElement('a-entity');
-      this.allParticlesEl.id =
-        '__json-particles-' + Math.floor(Math.random() * 1000);
-      this.el.appendChild(this.allParticlesEl);
-    }
-
     if (this.sprite_rotation !== false) {
       this.geometry.rotateX(this.sprite_rotation.x);
       this.geometry.rotateY(this.sprite_rotation.y);
@@ -150,13 +145,15 @@ AFRAME.registerComponent('particleplayer', {
   },
 
   loadParticlesJSON: function(json, scale) {
-    var data = JSON.parse(json.data);
-    var p;  // particle
     var alive;
-    var frames = data.frames;
-    var F = data.precision;
-    this.restPositions = [];
-    this.restRotations = [];
+    var p;  // particle
+
+    this.restPositions.length = 0;
+    this.restRotations.length = 0;
+
+    const data = JSON.parse(json.data);
+    const frames = data.frames;
+    const F = data.precision;
 
     this.useRotation = data.rotation;
 
@@ -203,49 +200,55 @@ AFRAME.registerComponent('particleplayer', {
     }
   },
 
-  createParticles: function(numParticleSystems) {
-    var i;
-    var p;
-    var allParticles;
-    var loop = parseInt(this.data.loop);
+  createParticles: (function() {
+    const tempGeometries = [];
 
-    // remove old particles
-    allParticles = this.allParticlesEl.object3D;
-    while (allParticles.children.length) {
-      allParticles.remove(allParticles.children[0]);
-    }
+    return function(numParticleSystems) {
+      const data = this.data;
+      var loop = parseInt(this.data.loop);
 
-    this.cache = [];
+      this.cache.length = 0;
 
-    if (isNaN(loop)) {
-      loop = this.data.loop === 'true' ? Number.MAX_VALUE : 0;
-    }
-
-    for (i = 0; i < numParticleSystems; i++) {
-      var particleSystem = {
-        active: false,
-        loopTotal: loop,
-        loopCount: 0,
-        time: 0,
-        activeParticles: new Array(this.count),
-        object3D: new THREE.Object3D()
-      };
-
-      particleSystem.object3D.visible = false;
-
-      for (p = 0; p < this.numParticles; p++) {
-        var part = new THREE.Mesh(this.geometry, this.material);
-        part.visible = false;
-        particleSystem.object3D.add(part);
-        if (p < this.count) {
-          particleSystem.activeParticles[p] = p;
-        }
+      if (isNaN(loop)) {
+        loop = this.data.loop === 'true' ? Number.MAX_VALUE : 0;
       }
 
-      allParticles.add(particleSystem.object3D);
-      this.cache.push(particleSystem);
-    }
-  },
+      for (let i = 0; i < numParticleSystems; i++) {
+        let particleSystem = {
+          active: false,
+          activeParticles: new Array(this.particleCount),
+          loopCount: 0,
+          loopTotal: loop,
+          mesh: null,
+          time: 0
+        };
+
+        // Fill array of geometries to merge.
+    const ratio = data.img ? (data.img.width / data.img.height) : 1;
+
+        tempGeometries.length = 0;
+        for (p = 0; p < this.numParticles; p++) {
+          tempGeometries.push(
+    new THREE.PlaneBufferGeometry(
+      0.1 * ratio * data.particleSystemScale,
+      0.1 * data.particleSystemcale
+      )
+    );
+        }
+
+        // Create merged geometry for whole particle system.
+        let mergedBufferGeometry = THREE.BufferGeometryUtils.mergeBufferGeometries(tempGeometries);
+
+        // Only render up to count with drawRange (vertices).
+        mergedBufferGeometry.setDrawRange(0, NUM_VERTICES * this.particleCount);
+
+        particleSystem.mesh = new THREE.Mesh(mergedBufferGeometry, this.material);
+        particleSystem.mesh.visible = false;
+
+        this.cache.push(particleSystem);
+      }
+    };
+  })(),
 
   start: function(evt) {
     if (this.data.delay > 0) {
@@ -283,7 +286,6 @@ AFRAME.registerComponent('particleplayer', {
     }
 
     particleSystem = this.cache[found];
-
     particleSystem.active = true;
     particleSystem.loopCount = 1;
     particleSystem.object3D.visible = true;
@@ -326,7 +328,7 @@ AFRAME.registerComponent('particleplayer', {
     var rand;
 
     // no picking, just hide and reset
-    if (this.count === this.numParticles) {
+    if (this.particleCount === this.numParticles) {
       for (i = 0; i < this.numParticles; i++) {
         this.resetParticle(particleSystem.object3D.children[i], i);
       }
@@ -335,14 +337,14 @@ AFRAME.registerComponent('particleplayer', {
 
     // hide particles from last animation and initialize indexPool
     for (i = 0; i < this.numParticles; i++) {
-      if (i < this.count) {
+      if (i < this.particleCount) {
         particleSystem.object3D.children[particleSystem.activeParticles[i]].visible = false;
       }
       this.indexPool[i] = i;
     }
 
     // scramble indexPool
-    for (i = 0; i < this.count - 1; i++) {
+    for (i = 0; i < this.particleCount - 1; i++) {
       rand = i + Math.floor(Math.random() * (this.numParticles - i));
       particleSystem.activeParticles[i] = this.indexPool[rand];
       this.indexPool[rand] = this.indexPool[i];
