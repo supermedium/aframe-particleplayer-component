@@ -15,23 +15,23 @@ AFRAME.registerComponent('particleplayer', {
       default: 'additive',
       oneOf: ['normal', 'additive', 'multiply', 'substractive']
     },
-    cache: { default: 5, type: 'int' }, // number of simultaneous particle systems
-    color: { default: '#fff', type: 'color' },
-    count: { default: '100%' },
-    delay: { default: 0, type: 'int' },
-    dur: { default: 1000, type: 'int' },
-    img: { type: 'selector' },
-    interpolate: { default: false },
-    loop: { default: 'false' },
-    on: { default: 'init' },
-    protation: { type: 'vec3' },
-    pscale: { default: 1.0, type: 'float' },
-    scale: { default: 1.0, type: 'float' },
+    cache: {default: 5, type: 'int'}, // number of simultaneous particle systems
+    color: {default: '#fff', type: 'color'},
+    count: {default: '100%'},
+    delay: {default: 0, type: 'int'},
+    dur: {default: 1000, type: 'int'},
+    img: {type: 'selector'},
+    interpolate: {default: false},
+    loop: {default: 'false'},
+    on: {default: 'init'},
+    protation: {type: 'vec3'},
+    pscale: {default: 1.0, type: 'float'},
+    scale: {default: 1.0, type: 'float'},
     shader: {
       default: 'flat',
       oneOf: ['flat', 'lambert', 'phong', 'standard']
     },
-    src: { type: 'selector' }
+    src: {type: 'selector'}
   },
 
   multiple: true,

@@ -10,7 +10,7 @@
     "dist": "npm run build && uglifyjs dist/aframe-particleplayer-component.js > dist/aframe-particleplayer-component.min.js",
     "lint": "semistandard -v | snazzy",
     "prepublish": "npm run dist",
-    "prettier": "prettier --single-quote --write index.js",
+    "prettier": "prettier --single-quote --no-bracket-spacing --write index.js",
     "ghpages": "ghpages",
     "start": "npm run dev",
     "test": "karma start ./tests/karma.conf.js",
