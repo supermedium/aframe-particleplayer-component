@@ -8,7 +8,7 @@ if (typeof AFRAME === 'undefined') {
   );
 }
 
-const NUM_VERTICES = 6;
+const NUM_PLANE_POSITIONS = 12;
 
 const BLENDINGS = {
   normal: THREE.NormalBlending,
@@ -55,25 +55,23 @@ AFRAME.registerComponent('particleplayer', {
   multiple: true,
 
   init: function() {
+    this.frame = 0;
     this.framedata = null;
-    this.restPositions = [];  // position at first frame each particle is alive
-    this.restRotations = [];
+    this.indexPool = null;
+    this.lastFrame = 0;
+    this.material = null;
+    this.msPerFrame = 0;
     this.numFrames = 0;
     this.numParticles = 0;  // total number of particles per system
+    this.originalVertexPositions = [];
     this.particleCount = 0;  // actual number of particles to spawn per event (data.count)
-    this.systems = null;
-    this.cache = [];
-    this.material = null;
-    this.frame = 0;
-    this.lastFrame = 0;
-    this.msPerFrame = 0;
-    this.useRotation = false;
-    this.sprite_rotation = false;
+    this.particleSystems = [];
     this.protation = false;
-
-    // temporal vars for preventing gc
-    this.v = new THREE.Vector3();
-    this.indexPool = null;
+    this.restPositions = [];  // position at first frame each particle is alive
+    this.restRotations = [];
+    this.sprite_rotation = false;
+    this.systems = null;
+    this.useRotation = false;
   },
 
   update: function(oldData) {
@@ -198,7 +196,7 @@ AFRAME.registerComponent('particleplayer', {
       const data = this.data;
       var loop = parseInt(this.data.loop);
 
-      this.cache.length = 0;
+      this.particleSystems.length = 0;
 
       if (isNaN(loop)) {
         loop = this.data.loop === 'true' ? Number.MAX_VALUE : 0;
@@ -237,13 +235,11 @@ AFRAME.registerComponent('particleplayer', {
         // Create merged geometry for whole particle system.
         let mergedBufferGeometry = THREE.BufferGeometryUtils.mergeBufferGeometries(tempGeometries);
 
-        // Only render up to count with drawRange (vertices).
-        mergedBufferGeometry.setDrawRange(0, NUM_VERTICES * this.particleCount);
-
         particleSystem.mesh = new THREE.Mesh(mergedBufferGeometry, this.material);
         particleSystem.mesh.visible = false;
+        copyArray(this.originalVertexPositions, mergedBufferGeometry.attributes.position.array);
 
-        this.cache.push(particleSystem);
+        this.particleSystems.push(particleSystem);
       }
     };
   })(),
@@ -272,18 +268,18 @@ AFRAME.registerComponent('particleplayer', {
     }
 
     // find available (or oldest) particle system
-    for (var i = 0; i < this.cache.length; i++) {
-      if (this.cache[i].active === false) {
+    for (var i = 0; i < this.particleSystems.length; i++) {
+      if (this.particleSystems[i].active === false) {
         found = i;
         break;
       }
-      if (this.cache[i].time > oldestTime) {
+      if (this.particleSystems[i].time > oldestTime) {
         found = i;
-        oldestTime = this.cache[i].time;
+        oldestTime = this.particleSystems[i].time;
       }
     }
 
-    particleSystem = this.cache[found];
+    particleSystem = this.particleSystems[found];
     particleSystem.active = true;
     particleSystem.loopCount = 1;
     particleSystem.mesh.visible = true;
@@ -352,75 +348,163 @@ AFRAME.registerComponent('particleplayer', {
     }
   },
 
-  tick: function(time, delta) {
-    var j, i;  // loop vars
-    var particleSystem;  // current particle system
-    var frame;  // current particle system frame
-    var particle;  // current particle
-    var particleIndex;  // index of current particle
-    var fdata;  // all particles data in current frame
-    var fdataNext;  // next frame (for interpolation)
-    var useRotation = this.useRotation;
-    var frameTime;  // time in current frame (for interpolation)
-    var relTime;  // current particle system relative time (0-1)
-    var interpolate;  // whether interpolate between frames or not
+  tick: (function () {
+    const helperPositionVec3 = new THREE.Vector3();
+    const offscreenVec3 = new THREE.Vector3();
 
-    for (i = 0; i < this.cache.length; i++) {
-      particleSystem = this.cache[i];
-      if (!particleSystem.active) continue;
+    return function(time, delta) {
+      var frame;  // current particle system frame
+      var fdata;  // all particles data in current frame
+      var fdataNext;  // next frame (for interpolation)
+      var useRotation = this.useRotation;
+      var frameTime;  // time in current frame (for interpolation)
+      var relTime;  // current particle system relative time (0-1)
+      var interpolate;  // whether interpolate between frames or not
 
-      // if the duration is so short that there's no need to interpolate, don't do it
-      // even if user asked for it.
-      interpolate =
-        this.data.interpolate && this.data.dur / this.numFrames > delta;
+      for (let particleSystemIndex = 0; particleSystemIndex  < this.particleSystems.length; particleSystemIndex++) {
+        let particleSystem = this.particleSystems[particleSystemIndex];
+        if (!particleSystem.active) { continue; }
 
-      relTime = particleSystem.time / this.data.dur;
-      frame = relTime * this.numFrames;
-      fdata = this.framedata[Math.floor(frame)];
-      if (interpolate) {
-        frameTime = frame - Math.floor(frame);
-        fdataNext =
-          frame < this.numFrames - 1
-            ? this.framedata[Math.floor(frame) + 1]
-            : null;
-      }
-      for (j = 0; j < particleSystem.activeParticles.length; j++) {
-        particleIndex = particleSystem.activeParticles[j];
-        particle = particleSystem.object3D.children[particleIndex];
-        if (!fdata[particleIndex].alive) {
-          particle.visible = false;
+        // if the duration is so short that there's no need to interpolate, don't do it
+        // even if user asked for it.
+        interpolate =
+          this.data.interpolate && this.data.dur / this.numFrames > delta;
+        relTime = particleSystem.time / this.data.dur;
+        frame = relTime * this.numFrames;
+        fdata = this.framedata[Math.floor(frame)];
+        if (interpolate) {
+          frameTime = frame - Math.floor(frame);
+          fdataNext =
+            frame < this.numFrames - 1
+              ? this.framedata[Math.floor(frame) + 1]
+              : null;
+        }
+
+        for (let activeParticleIndex = 0; activeParticleIndex < particleSystem.activeParticles.length; activeParticleIndex++) {
+          let particleIndex = particleSystem.activeParticles[activeParticleIndex];
+          let vertexPositions = particleSystem.mesh.geometry.positions.array[particleIndex];
+          let rotation = useRotation && fdata[particleIndex].rotation;
+
+          // TODO: Add vertex position to original position to all vertices of plane...
+          if (!fdata[particleIndex].alive) {
+            // Hide plane off-screen when not alive.
+            transformPlane(particleIndex, vertexPositions, this.originalVertexPositions, offscreenVec3);
+            continue;
+          }
+
+          if (interpolate && fdataNext && fdataNext[particleIndex].alive) {
+            helperPositionVec3.lerpVectors(
+              fdata[particleIndex].position,
+              fdataNext[particleIndex].position,
+              frameTime
+            );
+            transformPlane(particleIndex, vertexPositions, this.originalVertexPositions, helperPositionVec3, rotation);
+          } else {
+            transformPlane(particleIndex, vertexPositions, this.originalVertexPositions, fdata[particleIndex].position, rotation);
+          }
+        }
+
+        particleSystem.time += delta;
+        if (particleSystem.time >= this.data.dur) {
+          if (particleSystem.loopCount < particleSystem.loopTotal) {
+            this.el.emit('particleplayerloop', null, false);
+            this.doLoop(particleSystem);
+          } else {
+            this.el.emit('particleplayerfinished', null,false);
+            particleSystem.active = false;
+            particleSystem.object3D.visible = false;
+          }
           continue;
         }
-
-        particle.visible = true;
-
-        if (interpolate && fdataNext && fdataNext[particleIndex].alive) {
-          particle.position.lerpVectors(
-            fdata[particleIndex].position,
-            fdataNext[particleIndex].position,
-            frameTime
-          );
-        } else {
-          particle.position.copy(fdata[particleIndex].position);
-        }
-
-        if (useRotation) {
-          particle.rotation.copy(fdata[particleIndex].rotation);
-        }
       }
+    };
+  })(),
 
-      particleSystem.time += delta;
-      if (particleSystem.time >= this.data.dur) {
-        if (particleSystem.loopCount < particleSystem.loopTotal) {
-          this.el.emit('loop');
-          this.doLoop(particleSystem);
-        } else {
-          this.el.emit('finished');
-          particleSystem.active = false;
-          particleSystem.object3D.visible = false;
-        }
-        continue;
-      }
-    }
-  }
+  _transformPlane: transformPlane
 });
+
+const tri = (function () {
+  const tri = new THREE.Geometry();
+  tri.vertices.push(new THREE.Vector3());
+  tri.vertices.push(new THREE.Vector3());
+  tri.vertices.push(new THREE.Vector3());
+  tri.faces.push(new THREE.Face3( 0, 1, 2));
+  return tri;
+})();
+
+/**
+ * Faces of a plane are v0, v2, v1 and v2, v3, v1.
+ * Positions are 12 numbers: [v0, v1, v2, v3].
+ */
+function transformPlane(index, array, originalArray, position, rotation) {
+  // Set first face (0, 2, 1).
+  tri.vertices[0].set(
+    originalArray[index + 0],
+    originalArray[index + 1],
+    originalArray[index + 2]
+  );
+  tri.vertices[1].set(
+    originalArray[index + 3],
+    originalArray[index + 4],
+    originalArray[index + 5]
+  );
+  tri.vertices[2].set(
+    originalArray[index + 6],
+    originalArray[index + 7],
+    originalArray[index + 8]
+  );
+  if (rotation) {
+    tri.rotateX(rotation.x);
+    tri.rotateY(rotation.y);
+    tri.rotateX(rotation.z);
+  }
+  tri.vertices[0].add(position);
+  tri.vertices[1].add(position);
+  tri.vertices[2].add(position);
+
+  array[0] = tri.vertices[0].x;
+  array[1] = tri.vertices[0].y;
+  array[2] = tri.vertices[0].z;
+  array[3] = tri.vertices[1].x;
+  array[4] = tri.vertices[1].y;
+  array[5] = tri.vertices[1].z;
+  array[6] = tri.vertices[2].x;
+  array[7] = tri.vertices[2].y;
+  array[8] = tri.vertices[2].z;
+
+  // Set second face (2, 3, 1).
+  tri.vertices[0].set(
+    originalArray[index + 3],
+    originalArray[index + 4],
+    originalArray[index + 5]
+  );
+  tri.vertices[1].set(
+    originalArray[index + 6],
+    originalArray[index + 7],
+    originalArray[index + 8]
+  );
+  tri.vertices[2].set(
+    originalArray[index + 9],
+    originalArray[index + 10],
+    originalArray[index + 11]
+  );
+  if (rotation) {
+    tri.rotateX(rotation.x);
+    tri.rotateY(rotation.y);
+    tri.rotateX(rotation.z);
+  }
+  tri.vertices[0].add(position);
+  tri.vertices[1].add(position);
+  tri.vertices[2].add(position);
+  array[9] = tri.vertices[2].x;
+  array[10] = tri.vertices[2].y;
+  array[11] = tri.vertices[2].z;
+}
+module.exports.transformPlane = transformPlane;
+
+function copyArray (dest, src) {
+  dest.length = 0;
+  for (let i = 0; i < src.length; i++) {
+    dest[i] = src[i];
+  }
+}
