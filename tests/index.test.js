@@ -64,15 +64,17 @@ suite('particle player', function () {
   });
 
   suite('transformPlane', function () {
+    var geometry;
     var originalPositions;
     var positions;
 
     setup(() => {
-      positions = THREE.BufferGeometryUtils.mergeBufferGeometries([
+      geometry = THREE.BufferGeometryUtils.mergeBufferGeometries([
         new THREE.PlaneBufferGeometry(),
         new THREE.PlaneBufferGeometry(),
         new THREE.PlaneBufferGeometry()
-      ]).attributes.position.array;
+      ]);
+      positions = geometry.attributes.position.array;
 
       originalPositions = positions.slice();
 
@@ -80,7 +82,7 @@ suite('particle player', function () {
     });
 
     test('does not change on zero position and rotation', function () {
-      component._transformPlane(0, positions, originalPositions,
+      component._transformPlane(0, geometry, originalPositions,
                                new THREE.Vector3(0, 0, 0));
       originalPositions.forEach((n, i) => {
         assert.equal(positions[i], n, i);
@@ -88,7 +90,7 @@ suite('particle player', function () {
     });
 
     test('can change first plane position', function () {
-      component._transformPlane(0, positions, originalPositions,
+      component._transformPlane(0, geometry, originalPositions,
                                new THREE.Vector3(1.1, 2.2, 3.3));
       for (let i = 0; i < 12; i += 3) {
         positions[i] = originalPositions[i] + 1.1;
@@ -103,7 +105,7 @@ suite('particle player', function () {
     });
 
     test('can change indexed plane position', function () {
-      component._transformPlane(1, positions, originalPositions,
+      component._transformPlane(1, geometry, originalPositions,
                                new THREE.Vector3(1.1, 2.2, 3.3));
       for (let i = 12; i < 24; i += 3) {
         positions[i] = originalPositions[i] + 1.1;
@@ -123,7 +125,7 @@ suite('particle player', function () {
     });
 
     test('can rotate X', function () {
-      component._transformPlane(0, positions, originalPositions,
+      component._transformPlane(0, geometry, originalPositions,
                                new THREE.Vector3(0, 0, 0),
                                new THREE.Euler(Math.PI / 4, 0, 0));
       assert.shallowDeepEqual(positions.slice(0, 12), [
@@ -143,7 +145,7 @@ suite('particle player', function () {
     });
 
     test('can rotate then position', function () {
-      component._transformPlane(0, positions, originalPositions,
+      component._transformPlane(0, geometry, originalPositions,
                                new THREE.Vector3(1, 2, 3),
                                new THREE.Euler(Math.PI / 4, 0, 0));
 

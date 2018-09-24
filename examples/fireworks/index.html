@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <title>A-Frame Particle Player Component - Fireworks</title>
     <meta name="description" content="Fireworks example for Particle Player component."></meta>
-    <script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
+    <script src="https://rawgit.com/aframevr/aframe/4b61c85/dist/aframe-master.min.js"></script>
     <script src="../../dist/aframe-particleplayer-component.min.js"></script>
 
     <style type="text/css">
@@ -29,7 +29,7 @@
               var y = (Math.random() - 0.5) * 4;
               var z = -Math.random() * 2;
 
-              el.emit('start', { 
+              el.emit('start', {
                 position: new THREE.Vector3(x, y, z),
                 rotation: new THREE.Euler(Math.random() - 0.5, 0, 0)
               });
@@ -38,7 +38,7 @@
         }
       });
     </script>
-    
+
   </head>
   <body>
     <div id="help">Press SPACE for fireworks</div>
@@ -50,7 +50,7 @@
       </a-assets>
 
       <a-entity position="0 1 -5"
-        clicker 
+        clicker
         particleplayer="on: start; src: #particlesJson; img: #particleTex; dur: 4000; count: 50%; scale: 0.6; pscale: 2; interpolate: true; shader: standard; cache: 20"
       ></a-entity>
 

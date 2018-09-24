@@ -239,6 +239,7 @@ AFRAME.registerComponent('particleplayer', {
 
         particleSystem.mesh = new THREE.Mesh(mergedBufferGeometry, this.material);
         particleSystem.mesh.visible = false;
+        this.el.setObject3D(`particleplayer${i}`, particleSystem.mesh);
         copyArray(this.originalVertexPositions, mergedBufferGeometry.attributes.position.array);
 
         this.particleSystems.push(particleSystem);
@@ -303,10 +304,10 @@ AFRAME.registerComponent('particleplayer', {
     const geometry = particleSystem.mesh.geometry;
 
     if (this.restPositions[particleIndex]) {
-      transformPlane(particleIndex, geometry.attributes.position, this.originalVertexPositions, this.restPositions[particleIndex], this.useRotation && this.restRotations[particleIndex]);
+      transformPlane(particleIndex, geometry, this.originalVertexPositions, this.restPositions[particleIndex], this.useRotation && this.restRotations[particleIndex]);
     } else {
       // Hide.
-      transformPlane(particleIndex, geometry.attributes.position, this.originalVertexPositions, OFFSCREEN_VEC3);
+      transformPlane(particleIndex, geometry, this.originalVertexPositions, OFFSCREEN_VEC3);
     }
 
     // TODO: Can update transformPlane for lookAt.
@@ -335,13 +336,13 @@ AFRAME.registerComponent('particleplayer', {
     const geometry = particleSystem.mesh.geometry;
     for (i = 0; i < this.numParticles; i++) {
       if (i < this.particleCount) {
-        transformPlane(particleSystem.activeParticleIndices[i], geometry.attributes.position, this.originalVertexPositions, OFFSCREEN_VEC3);
+        transformPlane(particleSystem.activeParticleIndices[i], geometry, this.originalVertexPositions, OFFSCREEN_VEC3);
       }
       this.indexPool[i] = i;
     }
 
     // scramble indexPool
-    for (i = 0; i < this.particleCount - 1; i++) {
+    for (i = 0; i < this.particleCount; i++) {
       rand = i + Math.floor(Math.random() * (this.numParticles - i));
       particleSystem.activeParticleIndices[i] = this.indexPool[rand];
       this.indexPool[rand] = this.indexPool[i];
@@ -382,13 +383,12 @@ AFRAME.registerComponent('particleplayer', {
 
         for (let activeParticleIndex = 0; activeParticleIndex < particleSystem.activeParticleIndices.length; activeParticleIndex++) {
           let particleIndex = particleSystem.activeParticleIndices[activeParticleIndex];
-          let vertexPositions = particleSystem.mesh.geometry.positions.array[particleIndex];
           let rotation = useRotation && fdata[particleIndex].rotation;
 
           // TODO: Add vertex position to original position to all vertices of plane...
           if (!fdata[particleIndex].alive) {
             // Hide plane off-screen when not alive.
-            transformPlane(particleIndex, vertexPositions, this.originalVertexPositions, OFFSCREEN_VEC3);
+            transformPlane(particleIndex, particleSystem.mesh.geometry, this.originalVertexPositions, OFFSCREEN_VEC3);
             continue;
           }
 
@@ -398,9 +398,9 @@ AFRAME.registerComponent('particleplayer', {
               fdataNext[particleIndex].position,
               frameTime
             );
-            transformPlane(particleIndex, vertexPositions, this.originalVertexPositions, helperPositionVec3, rotation);
+            transformPlane(particleIndex, particleSystem.mesh.geometry, this.originalVertexPositions, helperPositionVec3, rotation);
           } else {
-            transformPlane(particleIndex, vertexPositions, this.originalVertexPositions, fdata[particleIndex].position, rotation);
+            transformPlane(particleIndex, particleSystem.mesh.geometry, this.originalVertexPositions, fdata[particleIndex].position, rotation);
           }
         }
 
@@ -412,7 +412,7 @@ AFRAME.registerComponent('particleplayer', {
           } else {
             this.el.emit('particleplayerfinished', null,false);
             particleSystem.active = false;
-            particleSystem.object3D.visible = false;
+            particleSystem.mesh.visible = false;
           }
           continue;
         }
@@ -437,7 +437,9 @@ const tri = (function () {
  * Faces of a plane are v0, v2, v1 and v2, v3, v1.
  * Positions are 12 numbers: [v0, v1, v2, v3].
  */
-function transformPlane(index, array, originalArray, position, rotation) {
+function transformPlane(index, geometry, originalArray, position, rotation) {
+  const array = geometry.attributes.position.array;
+
   // Calculate first face (0, 2, 1).
   tri.vertices[0].set(
     originalArray[index + 0],
@@ -499,6 +501,8 @@ function transformPlane(index, array, originalArray, position, rotation) {
   array[9] = tri.vertices[2].x;
   array[10] = tri.vertices[2].y;
   array[11] = tri.vertices[2].z;
+
+  geometry.attributes.position.needsUpdate = true;
 }
 module.exports.transformPlane = transformPlane;
 
