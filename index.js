@@ -169,23 +169,23 @@ AFRAME.registerComponent('particleplayer', {
                 (rawP[1] / precision) * scale,
                 (rawP[2] / precision) * scale
               )
-            : null,
+            : new THREE.Vector3(),
           alive: alive
         };
 
         if (jsonData.rotation) {
           p.rotation = alive
             ? new THREE.Euler(rawP[3] / precision, rawP[4] / precision, rawP[5] / precision)
-            : null;
+            : new THREE.Euler();
         }
 
         if (alive && frameIndex === 0) {
           this.restPositions[particleIndex] = p.position
             ? p.position.clone(new THREE.Vector3())
-            : null;
+            : new THREE.Vector3();
           this.restRotations[particleIndex] = p.rotation
             ? p.rotation.clone(new THREE.Euler())
-            : null;
+            : new THREE.Vector3();
         }
       }
     }
@@ -410,7 +410,7 @@ AFRAME.registerComponent('particleplayer', {
             this.el.emit('particleplayerloop', null, false);
             this.doLoop(particleSystem);
           } else {
-            this.el.emit('particleplayerfinished', null,false);
+            this.el.emit('particleplayerfinished', null, false);
             particleSystem.active = false;
             particleSystem.mesh.visible = false;
           }
@@ -464,15 +464,15 @@ function transformPlane(index, geometry, originalArray, position, rotation) {
   tri.vertices[0].add(position);
   tri.vertices[1].add(position);
   tri.vertices[2].add(position);
-  array[0] = tri.vertices[0].x;
-  array[1] = tri.vertices[0].y;
-  array[2] = tri.vertices[0].z;
-  array[3] = tri.vertices[1].x;
-  array[4] = tri.vertices[1].y;
-  array[5] = tri.vertices[1].z;
-  array[6] = tri.vertices[2].x;
-  array[7] = tri.vertices[2].y;
-  array[8] = tri.vertices[2].z;
+  array[index + 0] = tri.vertices[0].x;
+  array[index + 1] = tri.vertices[0].y;
+  array[index + 2] = tri.vertices[0].z;
+  array[index + 3] = tri.vertices[1].x;
+  array[index + 4] = tri.vertices[1].y;
+  array[index + 5] = tri.vertices[1].z;
+  array[index + 6] = tri.vertices[2].x;
+  array[index + 7] = tri.vertices[2].y;
+  array[index + 8] = tri.vertices[2].z;
 
   // Calculate second face (2, 3, 1) just for the last vertex.
   tri.vertices[0].set(
@@ -498,9 +498,9 @@ function transformPlane(index, geometry, originalArray, position, rotation) {
   tri.vertices[0].add(position);
   tri.vertices[1].add(position);
   tri.vertices[2].add(position);
-  array[9] = tri.vertices[2].x;
-  array[10] = tri.vertices[2].y;
-  array[11] = tri.vertices[2].z;
+  array[index + 9] = tri.vertices[2].x;
+  array[index + 10] = tri.vertices[2].y;
+  array[index + 11] = tri.vertices[2].z;
 
   geometry.attributes.position.needsUpdate = true;
 }
