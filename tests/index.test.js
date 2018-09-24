@@ -108,19 +108,19 @@ suite('particle player', function () {
       component._transformPlane(1, geometry, originalPositions,
                                new THREE.Vector3(1.1, 2.2, 3.3));
       for (let i = 12; i < 24; i += 3) {
-        positions[i] = originalPositions[i] + 1.1;
-        positions[i + 1] = originalPositions[i + 1] + 2.2;
-        positions[i + 2] = originalPositions[i + 2] + 3.3;
+        assertAlmostEqual(positions[i], originalPositions[i] + 1.1);
+        assertAlmostEqual(positions[i + 1], originalPositions[i + 1] + 2.2);
+        assertAlmostEqual(positions[i + 2], originalPositions[i + 2] + 3.3);
       }
       for (let i = 0; i < 12; i += 3) {
-        positions[i] = originalPositions[i];
-        positions[i + 1] = originalPositions[i + 1];
-        positions[i + 2] = originalPositions[i + 2];
+        assertAlmostEqual(positions[i], originalPositions[i]);
+        assertAlmostEqual(positions[i + 1], originalPositions[i + 1]);
+        assertAlmostEqual(positions[i + 2], originalPositions[i + 2]);
       }
       for (let i = 24; i < 36; i += 3) {
-        positions[i] = originalPositions[i];
-        positions[i + 1] = originalPositions[i + 1];
-        positions[i + 2] = originalPositions[i + 2];
+        assertAlmostEqual(positions[i], originalPositions[i]);
+        assertAlmostEqual(positions[i + 1], originalPositions[i + 1]);
+        assertAlmostEqual(positions[i + 2], originalPositions[i + 2]);
       }
     });
 
@@ -171,4 +171,8 @@ function assertAlmostArray(x, y) {
   x = x.map(n => n.toFixed(4));
   y = x.map(n => n.toFixed(4));
   assert.shallowDeepEqual(x, y);
+}
+
+function assertAlmostEqual(x, y) {
+  assert.equal(x.toFixed(4), y.toFixed(4));
 }

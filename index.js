@@ -437,8 +437,9 @@ const tri = (function () {
  * Faces of a plane are v0, v2, v1 and v2, v3, v1.
  * Positions are 12 numbers: [v0, v1, v2, v3].
  */
-function transformPlane(index, geometry, originalArray, position, rotation) {
+function transformPlane(particleIndex, geometry, originalArray, position, rotation) {
   const array = geometry.attributes.position.array;
+  const index = particleIndex * NUM_PLANE_POSITIONS;
 
   // Calculate first face (0, 2, 1).
   tri.vertices[0].set(
