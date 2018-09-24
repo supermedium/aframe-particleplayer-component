@@ -24,6 +24,8 @@ const SHADERS = {
   standard: THREE.MeshStandardMaterial
 };
 
+const OFFSCREEN_VEC3 = new THREE.Vector3(-99999, -99999, -99999);
+
 /**
  * Particle Player component for A-Frame.
  */
@@ -205,7 +207,7 @@ AFRAME.registerComponent('particleplayer', {
       for (let i = 0; i < numParticleSystems; i++) {
         let particleSystem = {
           active: false,
-          activeParticles: new Array(this.particleCount),
+          activeParticleIndices: new Array(this.particleCount),
           loopCount: 0,
           loopTotal: loop,
           mesh: null,
@@ -297,19 +299,19 @@ AFRAME.registerComponent('particleplayer', {
     this.resetParticles(particleSystem);
   },
 
-  resetParticle: function(part, i) {
-    part.visible = false;
-    if (this.restPositions[i]) {
-      part.position.copy(this.restPositions[i]);
-    }
-    if (this.useRotation) {
-      if (this.restRotations[i]) {
-        part.rotation.copy(this.restRotations[i]);
-      }
+  resetParticle: function(particleSystem, particleIndex) {
+    const geometry = particleSystem.mesh.geometry;
+
+    if (this.restPositions[particleIndex]) {
+      transformPlane(particleIndex, geometry.attributes.position, this.originalVertexPositions, this.restPositions[particleIndex], this.useRotation && this.restRotations[particleIndex]);
     } else {
-      // lookAt does not support rotated or translated parents! :_(
-      // part.lookAt(this.camera.position);
+      // Hide.
+      transformPlane(particleIndex, geometry.attributes.position, this.originalVertexPositions, OFFSCREEN_VEC3);
     }
+
+    // TODO: Can update transformPlane for lookAt.
+    // lookAt does not support rotated or translated parents! :_(
+    // part.lookAt(this.camera.position);
   },
 
   /**
@@ -321,20 +323,19 @@ AFRAME.registerComponent('particleplayer', {
     var i;
     var rand;
 
-    return;  // TODO:
-
     // no picking, just hide and reset
     if (this.particleCount === this.numParticles) {
       for (i = 0; i < this.numParticles; i++) {
-        this.resetParticle(particleSystem.object3D.children[i], i);
+        this.resetParticle(particleSystem, i);
       }
       return;
     }
 
     // hide particles from last animation and initialize indexPool
+    const geometry = particleSystem.mesh.geometry;
     for (i = 0; i < this.numParticles; i++) {
       if (i < this.particleCount) {
-        particleSystem.object3D.children[particleSystem.activeParticles[i]].visible = false;
+        transformPlane(particleSystem.activeParticleIndices[i], geometry.attributes.position, this.originalVertexPositions, OFFSCREEN_VEC3);
       }
       this.indexPool[i] = i;
     }
@@ -342,15 +343,14 @@ AFRAME.registerComponent('particleplayer', {
     // scramble indexPool
     for (i = 0; i < this.particleCount - 1; i++) {
       rand = i + Math.floor(Math.random() * (this.numParticles - i));
-      particleSystem.activeParticles[i] = this.indexPool[rand];
+      particleSystem.activeParticleIndices[i] = this.indexPool[rand];
       this.indexPool[rand] = this.indexPool[i];
-      this.resetParticle(particleSystem.object3D.children[particleSystem.activeParticles[i]], i);
+      this.resetParticle(particleSystem, particleSystem.activeParticleIndices[i]);
     }
   },
 
   tick: (function () {
     const helperPositionVec3 = new THREE.Vector3();
-    const offscreenVec3 = new THREE.Vector3();
 
     return function(time, delta) {
       var frame;  // current particle system frame
@@ -380,15 +380,15 @@ AFRAME.registerComponent('particleplayer', {
               : null;
         }
 
-        for (let activeParticleIndex = 0; activeParticleIndex < particleSystem.activeParticles.length; activeParticleIndex++) {
-          let particleIndex = particleSystem.activeParticles[activeParticleIndex];
+        for (let activeParticleIndex = 0; activeParticleIndex < particleSystem.activeParticleIndices.length; activeParticleIndex++) {
+          let particleIndex = particleSystem.activeParticleIndices[activeParticleIndex];
           let vertexPositions = particleSystem.mesh.geometry.positions.array[particleIndex];
           let rotation = useRotation && fdata[particleIndex].rotation;
 
           // TODO: Add vertex position to original position to all vertices of plane...
           if (!fdata[particleIndex].alive) {
             // Hide plane off-screen when not alive.
-            transformPlane(particleIndex, vertexPositions, this.originalVertexPositions, offscreenVec3);
+            transformPlane(particleIndex, vertexPositions, this.originalVertexPositions, OFFSCREEN_VEC3);
             continue;
           }
 
@@ -423,6 +423,7 @@ AFRAME.registerComponent('particleplayer', {
   _transformPlane: transformPlane
 });
 
+// Use triangle geometry as a helper for rotating.
 const tri = (function () {
   const tri = new THREE.Geometry();
   tri.vertices.push(new THREE.Vector3());
@@ -437,7 +438,7 @@ const tri = (function () {
  * Positions are 12 numbers: [v0, v1, v2, v3].
  */
 function transformPlane(index, array, originalArray, position, rotation) {
-  // Set first face (0, 2, 1).
+  // Calculate first face (0, 2, 1).
   tri.vertices[0].set(
     originalArray[index + 0],
     originalArray[index + 1],
@@ -461,7 +462,6 @@ function transformPlane(index, array, originalArray, position, rotation) {
   tri.vertices[0].add(position);
   tri.vertices[1].add(position);
   tri.vertices[2].add(position);
-
   array[0] = tri.vertices[0].x;
   array[1] = tri.vertices[0].y;
   array[2] = tri.vertices[0].z;
@@ -472,7 +472,7 @@ function transformPlane(index, array, originalArray, position, rotation) {
   array[7] = tri.vertices[2].y;
   array[8] = tri.vertices[2].z;
 
-  // Set second face (2, 3, 1).
+  // Calculate second face (2, 3, 1) just for the last vertex.
   tri.vertices[0].set(
     originalArray[index + 3],
     originalArray[index + 4],

@@ -60,11 +60,10 @@ suite('particle player', function () {
       assert.equal(component.particleSystems.length, component.data.cache);
       assert.equal(geo.attributes.position.array.length,
                    component.numParticles * NUM_VERTICES * ITEM_SIZE);
-      console.log(geo.attributes.position.array);
     });
   });
 
-  suite.only('transformPlane', function () {
+  suite('transformPlane', function () {
     var originalPositions;
     var positions;
 
@@ -122,5 +121,52 @@ suite('particle player', function () {
         positions[i + 2] = originalPositions[i + 2];
       }
     });
+
+    test('can rotate X', function () {
+      component._transformPlane(0, positions, originalPositions,
+                               new THREE.Vector3(0, 0, 0),
+                               new THREE.Euler(Math.PI / 4, 0, 0));
+      assert.shallowDeepEqual(positions.slice(0, 12), [
+        -0.5,
+        0.3535533845424652,
+        0.3535533845424652,
+        0.5,
+        0.3535533845424652,
+        0.3535533845424652,
+        -0.5,
+        -0.3535533845424652,
+        -0.3535533845424652,
+        0.5,
+        -0.3535533845424652,
+        -0.3535533845424652,
+      ]);
+    });
+
+    test('can rotate then position', function () {
+      component._transformPlane(0, positions, originalPositions,
+                               new THREE.Vector3(1, 2, 3),
+                               new THREE.Euler(Math.PI / 4, 0, 0));
+
+      assertAlmostArray(positions.slice(0, 12), [
+        -0.5 + 1,
+        0.3535533845424652 + 2,
+        0.3535533845424652 + 3,
+        0.5 + 1,
+        0.3535533845424652 + 2,
+        0.3535533845424652 + 3,
+        -0.5 + 1,
+        -0.3535533845424652 + 2,
+        -0.3535533845424652 + 3,
+        0.5 + 1,
+        -0.3535533845424652 + 2,
+        -0.3535533845424652 + 3,
+      ]);
+    });
   });
 });
+
+function assertAlmostArray(x, y) {
+  x = x.map(n => n.toFixed(4));
+  y = x.map(n => n.toFixed(4));
+  assert.shallowDeepEqual(x, y);
+}
