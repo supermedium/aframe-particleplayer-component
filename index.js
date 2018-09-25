@@ -242,6 +242,11 @@ AFRAME.registerComponent('particleplayer', {
         this.el.setObject3D(`particleplayer${i}`, particleSystem.mesh);
         copyArray(this.originalVertexPositions, mergedBufferGeometry.attributes.position.array);
 
+        // Hide all particles by default.
+        for (let i = 0; i < mergedBufferGeometry.attributes.position.array.length; i++) {
+          mergedBufferGeometry.attributes.position.array[i] = -99999;
+        }
+
         this.particleSystems.push(particleSystem);
       }
     };
