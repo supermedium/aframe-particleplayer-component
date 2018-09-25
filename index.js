@@ -269,6 +269,10 @@ AFRAME.registerComponent('particleplayer', {
           mergedBufferGeometry.attributes.position.array[i] = -99999;
         }
 
+        for (let i = 0; i < particleSystem.activeParticleIndices.length; i++) {
+          particleSystem.activeParticleIndices[i] = i;
+        };
+
         this.particleSystems.push(particleSystem);
       }
     };
@@ -438,6 +442,7 @@ AFRAME.registerComponent('particleplayer', {
           activeParticleIndex < particleSystem.activeParticleIndices.length;
           activeParticleIndex++
         ) {
+
           let particleIndex =
             particleSystem.activeParticleIndices[activeParticleIndex];
           let rotation = useRotation && fdata[particleIndex].rotation;
