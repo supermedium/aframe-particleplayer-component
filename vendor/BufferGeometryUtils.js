@@ -236,6 +236,7 @@ THREE.BufferGeometryUtils = {
 
 			// gather .userData
 
+			mergedGeometry.userData = mergedGeometry.userData || {};
 			mergedGeometry.userData.mergedUserData = mergedGeometry.userData.mergedUserData || [];
 			mergedGeometry.userData.mergedUserData.push( geometry.userData );
 

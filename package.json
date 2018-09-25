@@ -1,7 +1,7 @@
 {
   "name": "aframe-particleplayer-component",
-  "version": "1.0.0",
-  "description": "Play particle systems from cached files",
+  "version": "2.0.0-beta1",
+  "description": "CPU-based particles for A-Frame from pre-simulated particle systems.",
   "main": "index.js",
   "unpkg": "dist/aframe-particleplayer-component.min.js",
   "scripts": {
