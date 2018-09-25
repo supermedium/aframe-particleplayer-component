@@ -1,0 +1,9 @@
+#help {
+  color: #ccc;
+  font: 20px sans-serif;
+  margin-top: 2em;
+  position: absolute;
+  text-align: center;
+  width: 100%;
+  z-index: 99999;
+}

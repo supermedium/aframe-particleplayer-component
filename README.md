@@ -95,7 +95,6 @@ For [A-Frame](https://aframe.io).
 | Property    | Description                                                                                                                                             | Default Value         |
 | --------    | -----------                                                                                                                                             | -------------         |
 | blending    | Particle's material blending mode. Possible values: 'normal', 'additive', 'multiply' or 'substractive'                                                  | 'additive'            |
-| cache       | Number of simultaneous systems playing                                                                                                                  | 5                     |
 | color       | Particle's material color                                                                                                                               | '#fff'                |
 | count       | Number of particles to draw. If less than total available, they are picked randomly. You can set a specific number or a percentage (using % symbol)     | '100%'                |
 | delay       | Milliseconds of wait until replaying the animation                                                                                                      | 0                     |
@@ -104,6 +103,7 @@ For [A-Frame](https://aframe.io).
 | interpolate | Interpolate particle positions among frames on slow replayings (big enough `dur` parameter)                                                             | false                 |
 | loop        | Whether loop the animation (true) or not (false). Alternatively, you can use a number here for a specific number of loops                               | 'false'               |
 | on          | Event that starts the animation                                                                                                                         | 'init' (on app start) |
+| poolSize    | Number of possible simultaneous systems to play at once                                                                                                 | 5                     |
 | protation   | Particle rotation offset. To fine tune their initial rotation                                                                                           | 0 0 0                 |
 | pscale      | Particles scale. By default particles are about 0.1 width (final size depends on texture ratio). You can increase their size changing this scale factor | 1.0                   |
 | scale       | Scale of the overall system. Each particle position is multiplied by this factor                                                                        | 1.0                   |

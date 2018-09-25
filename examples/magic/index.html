@@ -21,11 +21,11 @@
       </a-assets>
 
       <a-entity position="0 0 -2.5" rotation="0 -20 0">
-        <a-entity particleplayer="delay: 500; src: #particlesOrbJson; img: #starTex; dur: 4000; count: 40%; scale: 2.5; pscale: 9; interpolate: false; shader: standard; cache: 1; loop: true"></a-entity>
+        <a-entity particleplayer="delay: 500; src: #particlesOrbJson; img: #starTex; dur: 4000; count: 40%; scale: 2.5; pscale: 9; interpolate: false; shader: standard; poolSize: 1; loop: true"></a-entity>
 
-        <a-entity particleplayer="delay: 500; src: #particlesEnergyJson; img: #energyTex; dur: 4000; count: 100%; scale: 2.5; pscale: 2; interpolate: false; shader: standard; cache: 1; loop: true;"></a-entity>
+        <a-entity particleplayer="delay: 500; src: #particlesEnergyJson; img: #energyTex; dur: 4000; count: 100%; scale: 2.5; pscale: 2; interpolate: false; shader: standard; poolSize: 1; loop: true;"></a-entity>
 
-        <a-entity particleplayer="delay: 500; src: #particlesDustJson; img: #dustTex; dur: 4000; count: 100%; scale: 2.5; pscale:1 interpolate: false; shader: standard; cache: 1; loop: true; color: #aaf"></a-entity>
+        <a-entity particleplayer="delay: 500; src: #particlesDustJson; img: #dustTex; dur: 4000; count: 100%; scale: 2.5; pscale:1 interpolate: false; shader: standard; poolSize: 1; loop: true; color: #aaf"></a-entity>
       </a-entity>
 
       <!-- lights -->
@@ -37,7 +37,6 @@
       <a-plane width="10" height="10" position="0 5 -5" material="src: #floorTex; roughnessMap: #floorRoughTex; roughness: 0.6"></a-plane>
       <a-plane width="10" height="10" position="5 5 0" rotation="0 -90 0" material="src: #floorTex; roughnessMap: #floorRoughTex; roughness: 0.6"></a-plane>
       <a-plane width="10" height="10" position="-5 5 0" rotation="0 90 0" material="src: #floorTex; roughnessMap: #floorRoughTex; roughness: 0.6"></a-plane>
-
     </a-scene>
 
     <!-- GitHub Corner. -->

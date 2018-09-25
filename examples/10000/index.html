@@ -6,40 +6,17 @@
     <meta name="description" content="Test example for Particle Player component."></meta>
     <script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
     <script src="../../dist/aframe-particleplayer-component.min.js"></script>
-    <style type="text/css">
-      #help{
-        font: 20px sans-serif;
-        position: absolute;
-        width: 100%;
-        z-index: 99999;
-        color: #ccc;
-        margin-top: 2em;
-        text-align: center;
-      }
-    </style>
-
-    <script type="text/javascript">
-      AFRAME.registerComponent('clicker', {
-        init: function(){
-          var el = this.el;
-          document.addEventListener('keydown', function(evt){
-            if (evt.keyCode === 32) {
-              el.emit('start', {});
-            }
-          });
-        }
-      });
-    </script>
-    
+    <script src="../examples.js"></script>
+    <link rel="stylesheet" href="../examples.css"></link>
   </head>
   <body>
-    <div id="help">Press SPACE</div>
+    <div id="help">Press SPACE or CLICK</div>
     <a-scene background="color: #222">
       <a-assets>
         <a-asset-item id="particles-json" src="10000.json"></a-asset-item>
         <img src="test.png" id="particleTex">
       </a-assets>
-      <a-entity position="0 0.4 -5 " clicker particleplayer="src: #particles-json; img: #particleTex; dur: 10000; count: 100%; scale: 0.7; pscale: 0.4; interpolate: true; on: start"></a-entity>
+      <a-entity position="0 0.4 -5 " trigger particleplayer="src: #particles-json; img: #particleTex; dur: 10000; count: 100%; scale: 0.7; pscale: 0.4; interpolate: true; on: particleplayerstart"></a-entity>
     </a-scene>
 
     <!-- GitHub Corner. -->

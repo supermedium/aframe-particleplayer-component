@@ -35,7 +35,6 @@ AFRAME.registerComponent('particleplayer', {
       default: 'additive',
       oneOf: ['normal', 'additive', 'multiply', 'substractive']
     },
-    cache: {default: 5, type: 'int'}, // number of simultaneous particle systems
     color: {default: '#fff', type: 'color'},
     count: {default: '100%'},
     delay: {default: 0, type: 'int'},
@@ -44,6 +43,7 @@ AFRAME.registerComponent('particleplayer', {
     interpolate: {default: false},
     loop: {default: 'false'},
     on: {default: 'init'},
+    poolSize: {default: 5, type: 'int'}, // number of simultaneous particle systems
     protation: {type: 'vec3'},
     pscale: {default: 1.0, type: 'float'},
     scale: {default: 1.0, type: 'float'},
@@ -64,12 +64,12 @@ AFRAME.registerComponent('particleplayer', {
     this.material = null;
     this.msPerFrame = 0;
     this.numFrames = 0;
-    this.numParticles = 0;  // total number of particles per system
+    this.numParticles = 0; // total number of particles per system
     this.originalVertexPositions = [];
-    this.particleCount = 0;  // actual number of particles to spawn per event (data.count)
+    this.particleCount = 0; // actual number of particles to spawn per event (data.count)
     this.particleSystems = [];
     this.protation = false;
-    this.restPositions = [];  // position at first frame each particle is alive
+    this.restPositions = []; // position at first frame each particle is alive
     this.restRotations = [];
     this.sprite_rotation = false;
     this.systems = null;
@@ -77,11 +77,11 @@ AFRAME.registerComponent('particleplayer', {
   },
 
   update: function(oldData) {
-    var params;
-
     const data = this.data;
 
-    if (!data.src) { return; }
+    if (!data.src) {
+      return;
+    }
 
     if (oldData.on !== data.on) {
       if (oldData.on) {
@@ -104,13 +104,16 @@ AFRAME.registerComponent('particleplayer', {
     } else {
       this.particleCount = parseInt(data.count);
     }
-    this.particleCount = Math.min(this.numParticles, Math.max(0, this.particleCount));
+    this.particleCount = Math.min(
+      this.numParticles,
+      Math.max(0, this.particleCount)
+    );
 
     this.msPerFrame = data.dur / this.numFrames;
 
     this.indexPool = new Array(this.numParticles);
 
-    params = {
+    const materialParams = {
       color: new THREE.Color(data.color),
       side: THREE.DoubleSide,
       blending: BLENDINGS[data.blending],
@@ -119,14 +122,13 @@ AFRAME.registerComponent('particleplayer', {
       opacity: data.opacity,
       transparent: !!data.img || data.blending !== 'normal' || data.opacity < 1
     };
-
     if (SHADERS[data.shader] !== undefined) {
-      this.material = new SHADERS[data.shader](params);
+      this.material = new SHADERS[data.shader](materialParams);
     } else {
-      this.material = new SHADERS['flat'](params);
+      this.material = new SHADERS['flat'](materialParams);
     }
 
-    this.createParticles(data.cache);
+    this.createParticles(data.poolSize);
 
     if (data.on === 'init') {
       this.start();
@@ -135,7 +137,6 @@ AFRAME.registerComponent('particleplayer', {
 
   loadParticlesJSON: function(json, scale) {
     var alive;
-    var p;  // particle
 
     this.restPositions.length = 0;
     this.restRotations.length = 0;
@@ -147,10 +148,11 @@ AFRAME.registerComponent('particleplayer', {
     this.useRotation = jsonData.rotation;
 
     if (jsonData.sprite_rotation !== false) {
-      this.sprite_rotation = new THREE.Vector3();
-      this.sprite_rotation.x = jsonData.sprite_rotation[0] / precision;
-      this.sprite_rotation.y = jsonData.sprite_rotation[1] / precision;
-      this.sprite_rotation.z = jsonData.sprite_rotation[2] / precision;
+      this.sprite_rotation = {
+        x: jsonData.sprite_rotation[0] / precision,
+        y: jsonData.sprite_rotation[1] / precision,
+        z: jsonData.sprite_rotation[2] / precision
+      };
     } else {
       this.sprite_rotation = false;
     }
@@ -158,34 +160,42 @@ AFRAME.registerComponent('particleplayer', {
     this.framedata = new Array(frames.length);
     for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
       this.framedata[frameIndex] = new Array(frames[frameIndex].length);
-      for (let particleIndex = 0; particleIndex < frames[frameIndex].length; particleIndex++) {
-        let rawP = frames[frameIndex][particleIndex];  // data of particle i in frame f
-        alive = rawP !== 0;  // 0 means not alive yet this frame.
+      for (
+        let particleIndex = 0;
+        particleIndex < frames[frameIndex].length;
+        particleIndex++
+      ) {
+        let rawP = frames[frameIndex][particleIndex]; // data of particle i in frame f
+        alive = rawP !== 0; // 0 means not alive yet this frame.
 
-        let p = this.framedata[frameIndex][particleIndex] = {
+        let p = (this.framedata[frameIndex][particleIndex] = {
           position: alive
-            ? new THREE.Vector3(
-                (rawP[0] / precision) * scale,
-                (rawP[1] / precision) * scale,
-                (rawP[2] / precision) * scale
-              )
-            : new THREE.Vector3(),
+            ? {
+                x: (rawP[0] / precision) * scale,
+                y: (rawP[1] / precision) * scale,
+                z: (rawP[2] / precision) * scale
+              }
+            : null,
           alive: alive
-        };
+        });
 
         if (jsonData.rotation) {
           p.rotation = alive
-            ? new THREE.Euler(rawP[3] / precision, rawP[4] / precision, rawP[5] / precision)
-            : new THREE.Euler();
+            ? {
+                x: rawP[3] / precision,
+                y: rawP[4] / precision,
+                z: rawP[5] / precision
+              }
+            : null;
         }
 
         if (alive && frameIndex === 0) {
           this.restPositions[particleIndex] = p.position
-            ? p.position.clone(new THREE.Vector3())
-            : new THREE.Vector3();
+            ? {x: p.position.y, y: p.position.y, z: p.position.z}
+            : null;
           this.restRotations[particleIndex] = p.rotation
-            ? p.rotation.clone(new THREE.Euler())
-            : new THREE.Vector3();
+            ? {x: p.rotation.y, y: p.rotation.y, z: p.rotation.z}
+            : null;
         }
       }
     }
@@ -215,13 +225,13 @@ AFRAME.registerComponent('particleplayer', {
         };
 
         // Fill array of geometries to merge.
-        const ratio = data.img ? (data.img.width / data.img.height) : 1;
+        const ratio = data.img ? data.img.width / data.img.height : 1;
         tempGeometries.length = 0;
-        for (p = 0; p < this.numParticles; p++) {
+        for (let p = 0; p < this.numParticles; p++) {
           let geometry = new THREE.PlaneBufferGeometry(
             0.1 * ratio * data.pscale,
             0.1 * data.pscale
-          )
+          );
           if (this.sprite_rotation !== false) {
             geometry.rotateX(this.sprite_rotation.x);
             geometry.rotateY(this.sprite_rotation.y);
@@ -235,15 +245,27 @@ AFRAME.registerComponent('particleplayer', {
         }
 
         // Create merged geometry for whole particle system.
-        let mergedBufferGeometry = THREE.BufferGeometryUtils.mergeBufferGeometries(tempGeometries);
+        let mergedBufferGeometry = THREE.BufferGeometryUtils.mergeBufferGeometries(
+          tempGeometries
+        );
 
-        particleSystem.mesh = new THREE.Mesh(mergedBufferGeometry, this.material);
+        particleSystem.mesh = new THREE.Mesh(
+          mergedBufferGeometry,
+          this.material
+        );
         particleSystem.mesh.visible = false;
         this.el.setObject3D(`particleplayer${i}`, particleSystem.mesh);
-        copyArray(this.originalVertexPositions, mergedBufferGeometry.attributes.position.array);
+        copyArray(
+          this.originalVertexPositions,
+          mergedBufferGeometry.attributes.position.array
+        );
 
         // Hide all particles by default.
-        for (let i = 0; i < mergedBufferGeometry.attributes.position.array.length; i++) {
+        for (
+          let i = 0;
+          i < mergedBufferGeometry.attributes.position.array.length;
+          i++
+        ) {
           mergedBufferGeometry.attributes.position.array[i] = -99999;
         }
 
@@ -265,8 +287,8 @@ AFRAME.registerComponent('particleplayer', {
     var found = -1;
     var particleSystem;
     var oldestTime = 0;
-    var position = evt ? evt.detail['position'] : null;
-    var rotation = evt ? evt.detail['rotation'] : null;
+    var position = evt ? evt.detail.position : null;
+    var rotation = evt ? evt.detail.rotation : null;
 
     if (!(position instanceof THREE.Vector3)) {
       position = new THREE.Vector3();
@@ -309,10 +331,21 @@ AFRAME.registerComponent('particleplayer', {
     const geometry = particleSystem.mesh.geometry;
 
     if (this.restPositions[particleIndex]) {
-      transformPlane(particleIndex, geometry, this.originalVertexPositions, this.restPositions[particleIndex], this.useRotation && this.restRotations[particleIndex]);
+      transformPlane(
+        particleIndex,
+        geometry,
+        this.originalVertexPositions,
+        this.restPositions[particleIndex],
+        this.useRotation && this.restRotations[particleIndex]
+      );
     } else {
       // Hide.
-      transformPlane(particleIndex, geometry, this.originalVertexPositions, OFFSCREEN_VEC3);
+      transformPlane(
+        particleIndex,
+        geometry,
+        this.originalVertexPositions,
+        OFFSCREEN_VEC3
+      );
     }
 
     // TODO: Can update transformPlane for lookAt.
@@ -341,7 +374,12 @@ AFRAME.registerComponent('particleplayer', {
     const geometry = particleSystem.mesh.geometry;
     for (i = 0; i < this.numParticles; i++) {
       if (i < this.particleCount) {
-        transformPlane(particleSystem.activeParticleIndices[i], geometry, this.originalVertexPositions, OFFSCREEN_VEC3);
+        transformPlane(
+          particleSystem.activeParticleIndices[i],
+          geometry,
+          this.originalVertexPositions,
+          OFFSCREEN_VEC3
+        );
       }
       this.indexPool[i] = i;
     }
@@ -351,25 +389,34 @@ AFRAME.registerComponent('particleplayer', {
       rand = i + Math.floor(Math.random() * (this.numParticles - i));
       particleSystem.activeParticleIndices[i] = this.indexPool[rand];
       this.indexPool[rand] = this.indexPool[i];
-      this.resetParticle(particleSystem, particleSystem.activeParticleIndices[i]);
+      this.resetParticle(
+        particleSystem,
+        particleSystem.activeParticleIndices[i]
+      );
     }
   },
 
-  tick: (function () {
+  tick: (function() {
     const helperPositionVec3 = new THREE.Vector3();
 
     return function(time, delta) {
-      var frame;  // current particle system frame
-      var fdata;  // all particles data in current frame
-      var fdataNext;  // next frame (for interpolation)
+      var frame; // current particle system frame
+      var fdata; // all particles data in current frame
+      var fdataNext; // next frame (for interpolation)
       var useRotation = this.useRotation;
-      var frameTime;  // time in current frame (for interpolation)
-      var relTime;  // current particle system relative time (0-1)
-      var interpolate;  // whether interpolate between frames or not
+      var frameTime; // time in current frame (for interpolation)
+      var relTime; // current particle system relative time (0-1)
+      var interpolate; // whether interpolate between frames or not
 
-      for (let particleSystemIndex = 0; particleSystemIndex  < this.particleSystems.length; particleSystemIndex++) {
+      for (
+        let particleSystemIndex = 0;
+        particleSystemIndex < this.particleSystems.length;
+        particleSystemIndex++
+      ) {
         let particleSystem = this.particleSystems[particleSystemIndex];
-        if (!particleSystem.active) { continue; }
+        if (!particleSystem.active) {
+          continue;
+        }
 
         // if the duration is so short that there's no need to interpolate, don't do it
         // even if user asked for it.
@@ -386,14 +433,24 @@ AFRAME.registerComponent('particleplayer', {
               : null;
         }
 
-        for (let activeParticleIndex = 0; activeParticleIndex < particleSystem.activeParticleIndices.length; activeParticleIndex++) {
-          let particleIndex = particleSystem.activeParticleIndices[activeParticleIndex];
+        for (
+          let activeParticleIndex = 0;
+          activeParticleIndex < particleSystem.activeParticleIndices.length;
+          activeParticleIndex++
+        ) {
+          let particleIndex =
+            particleSystem.activeParticleIndices[activeParticleIndex];
           let rotation = useRotation && fdata[particleIndex].rotation;
 
           // TODO: Add vertex position to original position to all vertices of plane...
           if (!fdata[particleIndex].alive) {
             // Hide plane off-screen when not alive.
-            transformPlane(particleIndex, particleSystem.mesh.geometry, this.originalVertexPositions, OFFSCREEN_VEC3);
+            transformPlane(
+              particleIndex,
+              particleSystem.mesh.geometry,
+              this.originalVertexPositions,
+              OFFSCREEN_VEC3
+            );
             continue;
           }
 
@@ -403,9 +460,21 @@ AFRAME.registerComponent('particleplayer', {
               fdataNext[particleIndex].position,
               frameTime
             );
-            transformPlane(particleIndex, particleSystem.mesh.geometry, this.originalVertexPositions, helperPositionVec3, rotation);
+            transformPlane(
+              particleIndex,
+              particleSystem.mesh.geometry,
+              this.originalVertexPositions,
+              helperPositionVec3,
+              rotation
+            );
           } else {
-            transformPlane(particleIndex, particleSystem.mesh.geometry, this.originalVertexPositions, fdata[particleIndex].position, rotation);
+            transformPlane(
+              particleIndex,
+              particleSystem.mesh.geometry,
+              this.originalVertexPositions,
+              fdata[particleIndex].position,
+              rotation
+            );
           }
         }
 
@@ -429,12 +498,12 @@ AFRAME.registerComponent('particleplayer', {
 });
 
 // Use triangle geometry as a helper for rotating.
-const tri = (function () {
+const tri = (function() {
   const tri = new THREE.Geometry();
   tri.vertices.push(new THREE.Vector3());
   tri.vertices.push(new THREE.Vector3());
   tri.vertices.push(new THREE.Vector3());
-  tri.faces.push(new THREE.Face3( 0, 1, 2));
+  tri.faces.push(new THREE.Face3(0, 1, 2));
   return tri;
 })();
 
@@ -442,7 +511,13 @@ const tri = (function () {
  * Faces of a plane are v0, v2, v1 and v2, v3, v1.
  * Positions are 12 numbers: [v0, v1, v2, v3].
  */
-function transformPlane(particleIndex, geometry, originalArray, position, rotation) {
+function transformPlane(
+  particleIndex,
+  geometry,
+  originalArray,
+  position,
+  rotation
+) {
   const array = geometry.attributes.position.array;
   const index = particleIndex * NUM_PLANE_POSITIONS;
 
@@ -512,7 +587,7 @@ function transformPlane(particleIndex, geometry, originalArray, position, rotati
 }
 module.exports.transformPlane = transformPlane;
 
-function copyArray (dest, src) {
+function copyArray(dest, src) {
   dest.length = 0;
   for (let i = 0; i < src.length; i++) {
     dest[i] = src[i];
