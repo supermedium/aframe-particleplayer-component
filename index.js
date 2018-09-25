@@ -110,7 +110,7 @@ AFRAME.registerComponent('particleplayer', {
       map: data.img ? new THREE.TextureLoader().load(data.img.src) : null,
       depthWrite: false,
       opacity: data.opacity,
-      transparent: data.img || data.blending !== 'normal' || data.opacity < 1
+      transparent: !!data.img || data.blending !== 'normal' || data.opacity < 1
     };
 
     if (SHADERS[data.shader] !== undefined) {
