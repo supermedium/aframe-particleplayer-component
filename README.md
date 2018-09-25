@@ -8,13 +8,15 @@ instead of calculating the position of all particles on each frame using maths,
 that value is taken from a cache file (JSON format) with the movement of all
 the particles already calculated.
 
+![magic gif](examples/magic/magic.gif)
+
 **In short:**
 
 1. Install Blender add-on (or other exporter plugin when available)
 2. Design your particle system in Blender, and export a JSON
 3. Use this component to load the JSON and reproduce same particle system.
 
-![cover gif](examples/header.gif)
+![cover gif](header.gif)
 
 Features:
 
