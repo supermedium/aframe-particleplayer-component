@@ -1,4 +1,6 @@
-# Blender exporter add-on
+# Blender Exporter Add-On
+
+Add-on to export Blender particle systems.
 
 ## Installation
 
@@ -10,13 +12,12 @@
 4. Click on the checkbox to activate the add-on.
 5. Click on "Save User Settings" if you want to keep the add-on installed permanently (if not, you'll have to repeat previous steps each time you start Blender).
 
-
 ## Usage
 
-You will find the exporter in the tools sidebar on the left, in the **A-Frame** tab on the bottom.
+You will find the exporter in the tools sidebar on the left, in the **A-Frame**
+tab on the bottom.
 
 ![gui](readme/gui.jpg)
-
 
 + **Source**: Current selected object, which must have a particle system attached. You can type another name here to rename the object.
 + **Frames**: Use these fields to select which frames of the animation you want to export
@@ -28,8 +29,11 @@ You will find the exporter in the tools sidebar on the left, in the **A-Frame** 
 + **Precision / 1000**: Precision of the values to export. More zeroes, more precision.
 + **Save to**: Output file path. By default a filename is set using the object's name, but you can change it.
 
-All parameters determine final file size. If you want a smaller file, try reducing `precision`, increasing `step`, or not exporting the `rotation` if is not necessary.
+All parameters determine final file size. If you want a smaller file, try
+reducing `precision`, increasing `step`, or not exporting the `rotation` if is
+not necessary.
 
-To preview particles in blender and finetune initial rotation, use a textured plane object in **render / dupli objects** with `rotation` option on:
+To preview particles in blender and finetune initial rotation, use a textured
+plane object in **render / dupli objects** with `rotation` option on:
+
 ![dupli](readme/dupli.jpg)
-

@@ -12,8 +12,8 @@ the particles already calculated.
 
 **In short:**
 
-1. Install Blender add-on (or other exporter plugin when available)
-2. Design your particle system in Blender, and export a JSON
+1. Install [the particleplayer Blender add-on](https://github.com/supermedium/aframe-particleplayer-component/tree/master/exporters/blender#blender-exporter-add-on).
+2. Design your particle system in Blender, and export a JSON.
 3. Use this component to load the JSON and reproduce same particle system.
 
 ![cover gif](header.gif)
