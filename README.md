@@ -45,7 +45,8 @@ how you design them.
 
 * **More performant for complex simulations** Since all the hard work has
 already been done by the 3D package, when in real-time the component just has
-to replay the animation, not calculate anything.
+to replay the animation, not calculate anything. Each particle system takes one
+draw call (one merged buffer geometry).
 
 #### Cons:
 
@@ -53,12 +54,6 @@ to replay the animation, not calculate anything.
 particles move always the same. This can be overcome using `count` parameter
 so only a random percentage of the particles are used on each replaying,
 adding a lot of variation effectively.
-
-* **Limited performance**. Although the performance is very good because there
-is no hard math involved in each frame to move the particles, the current
-implementation is based on individual object3Ds per particle, and updating
-all matrices per frame. This is not optimal for many (thousands) particles,
-where a more GPU-oriented solution is needed.
 
 * **Big cache JSON files**. If you don't take care, cache files can be quite
 big for big simulations (both in number of particles and duration),
