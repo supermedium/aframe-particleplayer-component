@@ -579,7 +579,7 @@ function transformPlane(
   if (rotation) {
     tri.rotateX(rotation.x);
     tri.rotateY(rotation.y);
-    tri.rotateX(rotation.z);
+    tri.rotateZ(rotation.z);
   }
   tri.vertices[0].add(position);
   tri.vertices[1].add(position);
