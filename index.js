@@ -313,6 +313,8 @@ AFRAME.registerComponent('particleplayer', {
       }
     }
 
+    if (found === -1) { return; }
+
     particleSystem = this.particleSystems[found];
     particleSystem.active = true;
     particleSystem.loopCount = 1;
