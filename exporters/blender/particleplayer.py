@@ -5,17 +5,19 @@ EXPORTED .JSON FILE FORMAT
     version: '1.0',
     precision: 1000,
     rotation: true,
+    age: true,
     sprite_rotation: [0, 0, 0],
     frames: [<frames>]
 }
 
-
 Each frame is an array of particles. Each particle is an array of integers:
 (to get the actual float value, divide by data.precision (1000 by default))
 
-    [ position.x, position.y, position.z, rotation.x, rotation.y, rotation.z ]
+    [ position.x, position.y, position.z, rotation.x, rotation.y, rotation.z, age ]
 
 If data is 0, the particle is not alive in that frame (it should be invisible)
+
+age goes from 0 to data.precision
 
 '''
 
@@ -26,13 +28,13 @@ import os
 from math import floor
 from bpy.app.handlers import persistent
 
-VERSION = '1.0' # json format version
+VERSION = '1.1' # json format version
 
 bl_info = {
     "name": "A-Frame particleplayer exporter",
     "description": "Exports current selected object particle systems to a JSON file ready to be consumed by A-Frame's particle player component.",
     "author": "Diego F. Goberna",
-    "version": (0, 0, 1),
+    "version": (0, 0, 2),
     "blender": (2, 70, 0),
     "location": "3D View > Tools > A-Frame",
     "warning": "", # used for warning icon and text in addons panel
@@ -51,12 +53,12 @@ def export_main(context, operator):
     obj = context.scene.objects.active
     props = obj.particleplayer
     precision = int(props.precision)
-    data = {'version': VERSION, 'precision': precision, 'rotation': props.userotation, 'frames': [], 'sprite_rotation': False }
+    data = {'version': VERSION, 'precision': precision, 'rotation': props.userotation, 'age': props.useage, 'frames': [], 'sprite_rotation': False }
 
     if not obj or not obj.particle_systems:
         operator.report({'ERROR'}, "No particle systems in selected object")
         return False
-    
+
     f = open( props.path, 'w')
     if not f:
         operator.report({'ERROR'}, "Could not open " + props.path)
@@ -82,12 +84,14 @@ def export_main(context, operator):
                     part.append(AA( p.location.z ))
                     part.append(AA( -p.location.y ))
                     if props.userotation:
-                        part.append(AA( p.rotation.to_euler().x )) 
-                        part.append(AA( p.rotation.to_euler().z )) 
+                        part.append(AA( p.rotation.to_euler().x ))
+                        part.append(AA( p.rotation.to_euler().z ))
                         part.append(AA( -p.rotation.to_euler().y ))
-                else: 
+                    if props.useage:
+                        part.append(AA( (frame - p.birth_time) / p.lifetime ))
+                else:
                     part = 0
-                    
+
                 fdata.append(part)
         data['frames'].append(fdata)
 
@@ -102,9 +106,10 @@ class ParticlePlayerProps(bpy.types.PropertyGroup):
     firstframe = bpy.props.IntProperty(name="From", min=0, subtype='UNSIGNED', default=0)
     lastframe = bpy.props.IntProperty(name="To", min=0, subtype='UNSIGNED', default=20)
     framestep = bpy.props.IntProperty(name="Step", min=1, subtype='UNSIGNED', default=1)
-    userotation = bpy.props.BoolProperty(name="Rotation", default=False)
+    userotation = bpy.props.BoolProperty(name="Export rotation", default=False)
+    useage = bpy.props.BoolProperty(name="Export age", default=False)
     path = bpy.props.StringProperty(description="Output file path", default="", subtype='FILE_PATH')
-    precision = bpy.props.EnumProperty(name="Precision", default='1000', 
+    precision = bpy.props.EnumProperty(name="Precision", description="Precision", default='1000',
             items=(
                 ('1', '1', ''),
                 ('10', '10', ''),
@@ -172,7 +177,10 @@ class ParticlePlayerPanel(bpy.types.Panel):
         row.operator("object.particleplayer_autorange", icon="TIME")
         row = layout.row()
         row.prop(obj.particleplayer, "userotation")
-        row.prop(obj.particleplayer, "precision", text="")
+        row = layout.row()
+        row.prop(obj.particleplayer, "useage")
+        row = layout.row()
+        row.prop(obj.particleplayer, "precision", text="Precision")
 
         row = layout.row()
         row.prop(obj.particleplayer, "path", text="Save to")
