@@ -91,7 +91,7 @@ For [A-Frame](https://aframe.io).
 
 | Property    | Description                                                                                                                                             | Default Value         |
 | --------    | -----------                                                                                                                                             | -------------         |
-| blending    | Particle's material blending mode. Possible values: 'normal', 'additive', 'multiply' or 'substractive'                                                  | 'additive'            |
+| blending    | Particle's material blending mode. Possible values: 'normal', 'additive', 'multiply' or 'subtractive'                                                  | 'additive'            |
 | color       | Particle's material color                                                                                                                               | '#fff'                |
 | count       | Number of particles to draw. If less than total available, they are picked randomly. You can set a specific number or a percentage (using % symbol)     | '100%'                |
 | delay       | Milliseconds of wait until replaying the animation                                                                                                      | 0                     |
