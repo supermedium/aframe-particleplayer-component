@@ -54,9 +54,9 @@ def export_main(context, path, settings, operator):
     obj = context.active_object
     precision = int(settings['precision'])
     data = {'version': VERSION, 'precision': precision, 'rotation': settings['userotation'], 'age': settings['useage'], 'frames': [], 'sprite_rotation': False }
-    
+
     # update dep graph
-    obj = bpy.context.depsgraph.objects.get(obj.name, None)
+    obj = bpy.context.evaluated_depsgraph_get().objects.get(obj.name, None)
 
     if not obj or not obj.particle_systems:
         operator.report({'ERROR'}, "No particle systems in selected object")
