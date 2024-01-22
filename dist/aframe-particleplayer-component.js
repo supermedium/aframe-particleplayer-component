@@ -968,11 +968,16 @@ AFRAME.registerComponent('particleplayer', {
 
 // Use triangle geometry as a helper for rotating.
 const tri = (function() {
-  const tri = new THREE.Geometry();
-  tri.vertices.push(new THREE.Vector3());
-  tri.vertices.push(new THREE.Vector3());
-  tri.vertices.push(new THREE.Vector3());
-  tri.faces.push(new THREE.Face3(0, 1, 2));
+  const tri = new THREE.BufferGeometry();
+
+  const vertices = new Float32Array([
+    0.0, 0.0, 0.0, // Vertex 1
+    1.0, 0.0, 0.0, // Vertex 2
+    0.0, 1.0, 0.0  // Vertex 3
+  ]);
+
+  tri.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+
   return tri;
 })();
 
